@@ -50,7 +50,7 @@ d_acc_icd_ii_before_acc <- d_acc_icd[icd_ii_before_acc != 0 | is.na(icd_ii_befor
 icd_ii_fo_vars <- grep("icd_ii_.*_fo", names(d_acc_icd), value = TRUE)
 icd_ii_vars <- str_remove(icd_ii_fo_vars, "_fo")
 
-## code into main categories --------
+## Cancer subgroup with ICD-10 COdes 
 icd_ii_c53_vars <- grep("C53", icd_ii_vars, perl = TRUE, value = T)
 icd_ii_c56_vars <- grep("C56", icd_ii_vars, perl = TRUE, value = T)
 icd_ii_c62_vars <- grep("C62", icd_ii_vars, perl = TRUE, value = T)
@@ -81,11 +81,58 @@ icd_ii_c69_c72_vars <- grep("C69|C7[0-2]", icd_ii_vars, perl = TRUE, value = T)
 icd_ii_c73_c75_vars <- grep("C7[3-5]", icd_ii_vars, perl = TRUE, value = T)
 icd_ii_lymphoid_vars <- grep("C8[1-6]|C88|C9[0-6]", icd_ii_vars, perl = TRUE, value = T)
 
-d_acc_icd[ , icd_ii_c01_c14 := ifelse(Reduce(`|`, lapply(icd_ii_c01_c14_vars, function(v)
+# Numbers on cancer subgroup for multiple ICD-10 Codes 
+d_acc_icd[, icd_ii_c18_c21 := ifelse(Reduce(`|`, lapply(icd_ii_c18_c21_vars, function(v)
+  f1(get(v), 1))),
+  1, 0)]
+table(d_acc_icd$icd_ii_c18_c21, useNA = "always")
+d_acc_icd[, icd_ii_c01_c14 := ifelse(Reduce(`|`, lapply(icd_ii_c01_c14_vars, function(v)
   f1(get(v), 1))),
   1, 0)]
 table(d_acc_icd$icd_ii_c01_c14, useNA = "always")
-
-d_acc_icd[ , icd_ii_c01_c14 := ifelse(Reduce(`|`, lapply(icd_ii_c01_c14_vars, function(v)
+d_acc_icd[, icd_ii_c23_c24 := ifelse(Reduce(`|`, lapply(icd_ii_c23_c24_vars, function(v)
   f1(get(v), 1))),
   1, 0)]
+table(d_acc_icd$icd_ii_c23_c24, useNA = "always")
+d_acc_icd[, icd_ii_c31_c33 := ifelse(Reduce(`|`, lapply(icd_ii_c31_c33_vars, function(v)
+  f1(get(v), 1))),
+  1, 0)]
+table(d_acc_icd$icd_ii_c31_c33, useNA = "always")
+d_acc_icd[, icd_ii_c30_c39 := ifelse(Reduce(`|`, lapply(icd_ii_c30_c39_vars, function(v)
+  f1(get(v), 1))),
+  1, 0)]
+table(d_acc_icd$icd_ii_c30_c39, useNA = "always")
+d_acc_icd[, icd_ii_c40_c41 := ifelse(Reduce(`|`, lapply(icd_ii_c40_c41_vars, function(v)
+  f1(get(v), 1))),
+  1, 0)]
+table(d_acc_icd$icd_ii_c40_c41, useNA = "always")
+d_acc_icd[, icd_ii_c44_c45 := ifelse(Reduce(`|`, lapply(icd_ii_c44_c45_vars, function(v)
+  f1(get(v), 1))),
+  1, 0)]
+table(d_acc_icd$icd_ii_c44_c45, useNA = "always")
+d_acc_icd[, icd_ii_other := ifelse(Reduce(`|`, lapply(icd_ii_other_vars, function(v)
+  f1(get(v), 1))),
+  1, 0)]
+table(d_acc_icd$icd_ii_other, useNA = "always")
+d_acc_icd[, icd_ii_c54_c55 := ifelse(Reduce(`|`, lapply(icd_ii_c54_c55_vars, function(v)
+  f1(get(v), 1))),
+  1, 0)]
+table(d_acc_icd$icd_ii_c54_c55, useNA = "always")
+d_acc_icd[, icd_ii_c65_c66 := ifelse(Reduce(`|`, lapply(icd_ii_c65_c66_vars, function(v)
+  f1(get(v), 1))),
+  1, 0)]
+table(d_acc_icd$icd_ii_c65_c66, useNA = "always")
+d_acc_icd[, icd_ii_c69_c72 := ifelse(Reduce(`|`, lapply(icd_ii_c69_c72_vars, function(v)
+  f1(get(v), 1))),
+  1, 0)]
+table(d_acc_icd$icd_ii_c69_c72, useNA = "always")
+d_acc_icd[, icd_ii_c73_c75 := ifelse(Reduce(`|`, lapply(icd_ii_c73_c75_vars, function(v)
+  f1(get(v), 1))),
+  1, 0)]
+table(d_acc_icd$icd_ii_c73_c75, useNA = "always")
+d_acc_icd[, icd_ii_lymphoid := ifelse(Reduce(`|`, lapply(icd_ii_lymphoid_vars, function(v)
+  f1(get(v), 1))),
+  1, 0)]
+table(d_acc_icd$icd_ii_lymphoid, useNA = "always")
+
+# Infectious diseases with ICD-10 Code 
