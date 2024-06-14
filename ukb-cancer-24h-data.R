@@ -56,19 +56,36 @@ d_acc_icd[, age_diff_cancer_acc := ifelse(cancer == "Healthy", 0, age_diff_cance
 d_acc_icd[, age_diff_cancer_acc := ifelse(cancer == "Cancer", year(acc_startdate) - year(icd_ii_fo), age_diff_cancer_acc)]
 table(d_acc_icd$age_diff_cancer_acc, useNA = "always")
 
-d_acc_icd[, cancer_time := cut(age_diff_cancer_acc, 
+# censor 2 years
+d_acc_icd[age_diff_cancer_acc %in% c(-2, -1), age_diff_cancer_acc := NA]
+
+# age at cancer diagnosis
+d_acc_icd[, age_at_cancer := year(icd_ii_fo) - year_birth]
+
+# d_acc_icd[, cancer_time := cut(age_diff_cancer_acc, 
+#                                breaks = c(-Inf, 0, 5, Inf),
+#                                labels = c("Healthy", 
+#                                           "1-5 years since diagnosis", 
+#                                           "More than 5 years since diagnosis"))]
+# table(d_acc_icd$cancer_time, useNA = "always")
+
+d_acc_icd[, cancer_time_5g := cut(age_diff_cancer_acc, 
                                breaks = c(-Inf, 0, 1, 5, 10, Inf),
-                               labels = c("Healthy", 
-                                          "1 year since diagnosis", 
+                               labels = c("Healthy",
+                                          "Less than 1 year since diagnosis",
                                           "1-5 years since diagnosis", 
-                                          "5-10 years since diagnosis",
+                                          "5-10 years since diagnosis", 
                                           "More than 10 years since diagnosis"))]
+d_acc_icd[, cancer_time_5g := as.factor(cancer_time_5g)]
+
 table(d_acc_icd$cancer_time, useNA = "always")
 
 # recode cancer
 d_acc_icd[, cancer_before_acc := NA]
 d_acc_icd[, cancer_before_acc := ifelse(age_diff_cancer_acc %between% c(-Inf, 0), 0, cancer_before_acc)]
 d_acc_icd[, cancer_before_acc := ifelse(age_diff_cancer_acc %between% c(0.1, Inf), 1, cancer_before_acc)]
+d_acc_icd[, cancer_before_acc := as.factor(cancer_before_acc)]
+d_acc_icd[, cancer_before_acc := relevel(cancer_before_acc, ref = "Healthy")]
 
 table(d_acc_icd$cancer_before_acc, useNA = "always")
 
@@ -180,10 +197,11 @@ nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_endocrine =
 nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_other == 1])
 
 # exclude those had cancer after acc and other health conditions
-d_cancer_acc <- d_acc_icd[((icd_ii_fo < acc_startdate & !is.na(cancer_before_acc_type)) | is.na(icd_ii_fo)) & !is.na(cancer_before_acc_type)]
-table(d_cancer_acc$cancer_before_acc_type, useNA = "always")
-table(d_cancer_acc$cancer_before_acc, useNA = "always")
+d_cancer_acc <- d_acc_icd[((icd_ii_before_acc == 1 & !is.na(cancer_before_acc_type)) | is.na(icd_ii_fo)) & !is.na(cancer_before_acc_type)]
 table(d_cancer_acc$cancer, useNA = "always")
+table(d_cancer_acc$cancer_before_acc, useNA = "always")
+table(d_cancer_acc$cancer_before_acc_type, useNA = "always")
+table(d_cancer_acc$cancer_time, useNA = "always")
 
 # Composition and ilr ----------------------
 d_cancer_acc <- d_cancer_acc[, -colnames(ilr_acc), with = FALSE]
