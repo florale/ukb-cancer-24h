@@ -13,7 +13,12 @@ saveRDS(fit_cancer, paste0(outputdir, "fit_cancer", ".RDS"))
 fit_cancer <- readRDS(paste0(outputdir, "fit_cancer", ".RDS"))
 
 # estimates
-d_cancer <- build.rg(fit_cancer)
+d_cancer <- model.frame(fit_cancer)
+d_cancer <- insight::get_datagrid(d_cancer, 
+                                  at = "cancer_before_acc",
+                                  factors = "mode",
+                                  length = NA)
+
 d_cancer <- unique(d_cancer)
 pred_cancer_24h <- fitted(fit_cancer, newdata = d_cancer, scale = "response")
 
@@ -46,8 +51,10 @@ fit_cancer_time <- readRDS(paste0(outputdir, "fit_cancer_time", ".RDS"))
 
 # estimates
 d_cancer_time <- model.frame(fit_cancer_time)
-d_cancer_time <- insight::get_datagrid(d_cancer_time)
-
+d_cancer_time <- insight::get_datagrid(d_cancer_time,
+                                       at = "cancer_time",
+                                       factors = "mode",
+                                       length = NA)
 d_cancer_time <- unique(d_cancer_time)
 pred_cancer_time <- fitted(fit_cancer_time, newdata = d_cancer_time, scale = "response")
 pred_comp_cancer_time <- as.data.table(pred_cancer_time)
@@ -62,7 +69,6 @@ pred_comp_cancer_time[, cancer_time := factor(cancer_time, ordered = TRUE,
                                                          "More than 5 years cancer since diagnosis"))]
 
 pred_comp_cancer_time <- pred_comp_cancer_time[!is.na(cancer_time)]
-
 pred_comp_cancer_time <- dcast(pred_comp_cancer_time, cancer_time + V3 ~ V2, value.var = "value")
 
 ggplot(pred_comp_cancer_time, aes(x = cancer_time, y = Estimate, group = V3)) +
@@ -71,7 +77,7 @@ ggplot(pred_comp_cancer_time, aes(x = cancer_time, y = Estimate, group = V3)) +
   facet_wrap(~V3, scales = "free") +
   scale_colour_jco() +
   scale_fill_jco() +
-  coord_flip() +      
+  coord_flip() +
   theme_ipsum() +
   theme(
     axis.ticks        = element_blank(),
@@ -82,10 +88,7 @@ ggplot(pred_comp_cancer_time, aes(x = cancer_time, y = Estimate, group = V3)) +
       linewidth = 0.5
     ))
 
-# estimated differences between group
-pred_cancer_24h_draws <- fitted(fit_quantile_cancer_time, newdata = d0, scale = "response", summary = FALSE)
-
-# cancer time 5g ------------------------
+# cancer time 5 groups ------------------------
 fit_cancer_time_5g <- brmcoda(clr_cancer_acc,
                               mvbind(ilr1, ilr2, ilr3) ~ cancer_time_5g +
                                 age + sex + white + working + edu + never_smoked + current_drinker + deprivation,
@@ -96,7 +99,12 @@ saveRDS(fit_cancer_time_5g, paste0(outputdir, "fit_cancer_time_5g", ".RDS"))
 fit_cancer_time_5g <- readRDS(paste0(outputdir, "fit_cancer_time_5g", ".RDS"))
 
 # estimates
-d_cancer_time_5g <- build.rg(fit_cancer_time_5g)
+d_cancer_time_5g <- model.frame(fit_cancer_time_5g)
+d_cancer_time_5g <- insight::get_datagrid(d_cancer_time_5g,
+                                          at = "cancer_time_5g",
+                                          factors = "mode",
+                                          length = NA)
+
 d_cancer_time_5g <- unique(d_cancer_time_5g)
 pred_cancer_time_5g <- fitted(fit_cancer_time_5g, newdata = d_cancer_time_5g, scale = "response")
 pred_comp_cancer_time_5g <- as.data.table(pred_cancer_time_5g)
@@ -188,43 +196,41 @@ ggplot(pred_comp_cancer_24h_type, aes(x = cancer_before_acc_type, y = Estimate, 
       linewidth = 0.5
     ))
 
-# cancer by time since diagnosis ------------------------
-fit_cancer_24h_timex <- brmcoda(clr_cancer_acc,
-                                mvbind(ilr1, ilr2, ilr3) ~ cancer_before_acc*age_diff_cancer_acc +
-                                  sex + white + working + edu + never_smoked + current_drinker + deprivation,
-                                # save_pars = save_pars(all = TRUE),
-                                warmup = 500, chains = 4, cores = 4, backend = "cmdstanr",
-)
-saveRDS(fit_cancer_24h_timex, paste0(outputdir, "fit_cancer_24h_timex", ".RDS"))
-fit_cancer_24h_timex <- readRDS(paste0(outputdir, "fit_cancer_24h_timex", ".RDS"))
+# cancer by time since diagnosis - not very smart model ------------------------
+# fit_cancer_24h_timex <- brmcoda(clr_cancer_acc,
+#                                 mvbind(ilr1, ilr2, ilr3) ~ cancer_before_acc*age_diff_cancer_acc +
+#                                   sex + white + working + edu + never_smoked + current_drinker + deprivation,
+#                                 # save_pars = save_pars(all = TRUE),
+#                                 warmup = 500, chains = 4, cores = 4, backend = "cmdstanr",
+# )
+# saveRDS(fit_cancer_24h_timex, paste0(outputdir, "fit_cancer_24h_timex", ".RDS"))
+# fit_cancer_24h_timex <- readRDS(paste0(outputdir, "fit_cancer_24h_timex", ".RDS"))
+# 
+# # estimates
+# age_diff_cancer_acc <- data.table(
+#   age_diff_cancer_acc = c(0:5))
+# 
+# # d_cancer_24h_timex <- insight::get_datagrid(model.frame(fit_cancer_24h_timex), factors = "mode")
+# d_cancer_24h_timex <- model.frame(fit_cancer_24h_timex)
+# d_cancer_24h_timex <- insight::get_datagrid(d_cancer_24h_timex, 
+#                                             at = "cancer_before_acc",
+#                                             factors = "mode",
+#                                             length = NA)
+# 
+# d_cancer_24h_timex <- expand.grid.df(as.data.table(d_cancer_24h_timex)[, -c("age_diff_cancer_acc")], age_diff_cancer_acc)
+# d_cancer_24h_timex <- unique(d_cancer_24h_timex)
+# pred_cancer_24h_timex <- fitted(fit_cancer_24h_timex, newdata = d_cancer_24h_timex, scale = "response")
+# 
+# pred_comp_cancer_24h_timex <- as.data.table(pred_cancer_24h_timex)
+# pred_comp_cancer_24h_timex <- dcast(pred_comp_cancer_24h_timex, V3 + V1 ~ V2, value.var = "value")
+# pred_comp_cancer_24h_timex <- cbind(pred_comp_cancer_24h_timex, d_cancer_24h_timex)
+# pred_comp_cancer_24h_timex <- pred_comp_cancer_24h_timex[!is.na(cancer_before_acc)]
+# 
+# ggplot(pred_comp_cancer_24h_timex, aes(x = age_diff_cancer_acc, y = Estimate, group = cancer_before_acc)) +
+#   geom_smooth(aes(colour = cancer_before_acc))+
+#   # geom_ribbon(aes(ymin = Q2.5,
+#   #                 ymax = Q97.5),
+#   #             alpha = 1/10, show.legend = TRUE) +
+#   facet_wrap(~V3, scales = "free") +
+#   theme_bw()
 
-# estimates
-age_diff_cancer_acc <- data.table(
-  age_diff_cancer_acc = c(0:10))
-
-# d_cancer_24h_timex <- insight::get_datagrid(model.frame(fit_cancer_24h_timex), factors = "mode")
-d_cancer_24h_timex <- build.rg(fit_cancer_24h_timex, ref = "grandmean", level = "aggregate", factors = "mode", length = NA)
-d_cancer_24h_timex <- model.frame(fit_cancer_24h_timex)
-d_cancer_24h_timex <- insight::get_datagrid(d_cancer_24h_timex, 
-                                            at = "cancer_before_acc",
-                                            factors = "mode",
-                                            length = NA)
-
-d_cancer_24h_timex <- expand.grid.df(as.data.table(d_cancer_24h_timex)[, -c("age_diff_cancer_acc")], age_diff_cancer_acc)
-d_cancer_24h_timex <- unique(d_cancer_24h_timex)
-pred_cancer_24h_timex <- fitted(fit_cancer_24h_timex, newdata = d_cancer_24h_timex, scale = "response")
-
-pred_comp_cancer_24h_timex <- as.data.table(pred_cancer_24h_timex)
-pred_comp_cancer_24h_timex <- dcast(pred_comp_cancer_24h_timex, V3 + V1 ~ V2, value.var = "value")
-pred_comp_cancer_24h_timex <- cbind(pred_comp_cancer_24h_timex, d_cancer_24h_timex)
-pred_comp_cancer_24h_timex <- pred_comp_cancer_24h_timex[!is.na(cancer_before_acc)]
-
-pred_comp_cancer_24h_timex[, cancer_before_acc := ifelse(cancer_before_acc == 0, "Healthy", "Cancer")]
-
-ggplot(pred_comp_cancer_24h_timex, aes(x = age_diff_cancer_acc, y = Estimate, group = cancer_before_acc)) +
-  geom_smooth()+
-  # geom_ribbon(aes(ymin = Q2.5,
-  #                 ymax = Q97.5),
-  #             alpha = 1/10, show.legend = TRUE) +
-  facet_wrap(~V3, scales = "free") +
-  theme_bw()
