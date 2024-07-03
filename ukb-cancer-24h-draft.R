@@ -1,3 +1,5 @@
+source("ukb-cancer-24h-utils.R")
+source(paste0(redir, "ukb_utils.R"))
 source("ukb-cancer-24h-data.R")
 
 # cancer vs healthy ------------------------
@@ -61,10 +63,12 @@ pred_comp_cancer_time <- as.data.table(pred_cancer_time)
 
 pred_comp_cancer_time[, cancer_time := NA]
 pred_comp_cancer_time[, cancer_time := ifelse(V1 == 1, "Healthy", cancer_time)]
-pred_comp_cancer_time[, cancer_time := ifelse(V1 == 2, "1-5 years since cancer diagnosis", cancer_time)]
-pred_comp_cancer_time[, cancer_time := ifelse(V1 == 3, "More than 5 years cancer since diagnosis", cancer_time)]
+pred_comp_cancer_time[, cancer_time := ifelse(V1 == 2, "Less than 1 year since diagnosis", cancer_time)]
+pred_comp_cancer_time[, cancer_time := ifelse(V1 == 3, "1-5 years since cancer diagnosis", cancer_time)]
+pred_comp_cancer_time[, cancer_time := ifelse(V1 == 4, "More than 5 years cancer since diagnosis", cancer_time)]
 pred_comp_cancer_time[, cancer_time := factor(cancer_time, ordered = TRUE,
                                               levels = c("Healthy",
+                                                         "Less than 1 year since diagnosis",
                                                          "1-5 years since cancer diagnosis",
                                                          "More than 5 years cancer since diagnosis"))]
 
@@ -154,6 +158,12 @@ fit_cancer_24h_type <- readRDS(paste0(outputdir, "fit_cancer_24h_type", ".RDS"))
 
 # estimates
 d_cancer_24h_type <- build.rg(fit_cancer_24h_type)
+
+d_cancer_24h_type <- model.frame(fit_cancer_24h_type)
+d_cancer_24h_type <- insight::get_datagrid(d_cancer_24h_type,
+                                          at = "cancer_before_acc_type",
+                                          factors = "mode",
+                                          length = NA)
 d_cancer_24h_type <- unique(d_cancer_24h_type)
 pred_cancer_24h_type <- fitted(fit_cancer_24h_type, newdata = d_cancer_24h_type, scale = "response")
 
@@ -234,3 +244,114 @@ ggplot(pred_comp_cancer_24h_type, aes(x = cancer_before_acc_type, y = Estimate, 
 #   facet_wrap(~V3, scales = "free") +
 #   theme_bw()
 
+# # stratified model ------------------
+# fit_cancer_sleep_q1 <- brmcoda(complr = clr_cancer_acc_sleep_q1,
+#                                formula = mvbind(ilr1, ilr2, ilr3) ~ cancer_before_acc +
+#                                  age + sex + white + working + edu + never_smoked + current_drinker + deprivation,
+#                                # save_pars = save_pars(all = TRUE),
+#                                warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
+# )
+# saveRDS(fit_cancer_sleep_q1, paste0(outputdir, "fit_cancer_sleep_q1", ".RDS"))
+# fit_cancer_sleep_q1 <- readRDS(paste0(outputdir, "fit_cancer_sleep_q1", ".RDS"))
+# 
+# # estimates
+# d_cancer_sleep_q1 <- model.frame(fit_cancer_sleep_q1)
+# d_cancer_sleep_q1 <- insight::get_datagrid(d_cancer_sleep_q1, 
+#                                            at = "cancer_before_acc",
+#                                            factors = "mode",
+#                                            length = NA)
+# 
+# d_cancer_sleep_q1 <- unique(d_cancer_sleep_q1)
+# pred_cancer_24h_sleep_q1 <- fitted(fit_cancer_sleep_q1, newdata = d_cancer_sleep_q1, scale = "response")
+# 
+# comp_cancer_sleep_q1 <- as.data.table(pred_cancer_24h_sleep_q1)
+# 
+# comp_cancer_sleep_q1[, cancer_before_acc := NA]
+# comp_cancer_sleep_q1[, cancer_before_acc := ifelse(V1 == 1, "Healthy", cancer_before_acc)]
+# comp_cancer_sleep_q1[, cancer_before_acc := ifelse(V1 == 2, "Cancer", cancer_before_acc)]
+# comp_cancer_sleep_q1 <- comp_cancer_sleep_q1[!is.na(cancer_before_acc)]
+# comp_cancer_sleep_q1 <- dcast(comp_cancer_sleep_q1, cancer_before_acc + V3 ~ V2, value.var = "value")
+# 
+# ggplot(comp_cancer_sleep_q1, aes(x = cancer_before_acc, y = Estimate, group = V3)) +
+#   geom_pointrange(aes(ymin = Q2.5,
+#                       ymax = Q97.5, colour = V3)) +
+#   facet_wrap(~V3, scales = "free") +
+#   scale_colour_jco() +
+#   scale_fill_jco() +
+#   coord_flip() +
+#   theme_bw()
+# 
+# 
+# fit_cancer_sleep_q23 <- brmcoda(complr = clr_cancer_acc_sleep_q23,
+#                                formula = mvbind(ilr1, ilr2, ilr3) ~ cancer_before_acc +
+#                                  age + sex + white + working + edu + never_smoked + current_drinker + deprivation,
+#                                # save_pars = save_pars(all = TRUE),
+#                                warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
+# )
+# saveRDS(fit_cancer_sleep_q23, paste0(outputdir, "fit_cancer_sleep_q23", ".RDS"))
+# fit_cancer_sleep_q23 <- readRDS(paste0(outputdir, "fit_cancer_sleep_q23", ".RDS"))
+# 
+# # estimates
+# d_cancer_sleep_q23 <- model.frame(fit_cancer_sleep_q23)
+# d_cancer_sleep_q23 <- insight::get_datagrid(d_cancer_sleep_q23, 
+#                                            at = "cancer_before_acc",
+#                                            factors = "mode",
+#                                            length = NA)
+# 
+# d_cancer_sleep_q23 <- unique(d_cancer_sleep_q23)
+# pred_cancer_24h_sleep_q23 <- fitted(fit_cancer_sleep_q23, newdata = d_cancer_sleep_q23, scale = "response")
+# 
+# comp_cancer_sleep_q23 <- as.data.table(pred_cancer_24h_sleep_q23)
+# 
+# comp_cancer_sleep_q23[, cancer_before_acc := NA]
+# comp_cancer_sleep_q23[, cancer_before_acc := ifelse(V1 == 1, "Healthy", cancer_before_acc)]
+# comp_cancer_sleep_q23[, cancer_before_acc := ifelse(V1 == 2, "Cancer", cancer_before_acc)]
+# comp_cancer_sleep_q23 <- comp_cancer_sleep_q23[!is.na(cancer_before_acc)]
+# comp_cancer_sleep_q23 <- dcast(comp_cancer_sleep_q23, cancer_before_acc + V3 ~ V2, value.var = "value")
+# 
+# ggplot(comp_cancer_sleep_q23, aes(x = cancer_before_acc, y = Estimate, group = V3)) +
+#   geom_pointrange(aes(ymin = Q2.5,
+#                       ymax = Q97.5, colour = V3)) +
+#   facet_wrap(~V3, scales = "free") +
+#   scale_colour_jco() +
+#   scale_fill_jco() +
+#   coord_flip() +
+#   theme_bw()
+# 
+# 
+# fit_cancer_sleep_q4 <- brmcoda(complr = clr_cancer_acc_sleep_q4,
+#                                 formula = mvbind(ilr1, ilr2, ilr3) ~ cancer_before_acc +
+#                                   age + sex + white + working + edu + never_smoked + current_drinker + deprivation,
+#                                 # save_pars = save_pars(all = TRUE),
+#                                 warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
+# )
+# saveRDS(fit_cancer_sleep_q4, paste0(outputdir, "fit_cancer_sleep_q4", ".RDS"))
+# fit_cancer_sleep_q4 <- readRDS(paste0(outputdir, "fit_cancer_sleep_q4", ".RDS"))
+# 
+# # estimates
+# d_cancer_sleep_q4 <- model.frame(fit_cancer_sleep_q4)
+# d_cancer_sleep_q4 <- insight::get_datagrid(d_cancer_sleep_q4, 
+#                                             at = "cancer_before_acc",
+#                                             factors = "mode",
+#                                             length = NA)
+# 
+# d_cancer_sleep_q4 <- unique(d_cancer_sleep_q4)
+# pred_cancer_24h_sleep_q4 <- fitted(fit_cancer_sleep_q4, newdata = d_cancer_sleep_q4, scale = "response")
+# 
+# comp_cancer_sleep_q4 <- as.data.table(pred_cancer_24h_sleep_q4)
+# 
+# comp_cancer_sleep_q4[, cancer_before_acc := NA]
+# comp_cancer_sleep_q4[, cancer_before_acc := ifelse(V1 == 1, "Healthy", cancer_before_acc)]
+# comp_cancer_sleep_q4[, cancer_before_acc := ifelse(V1 == 2, "Cancer", cancer_before_acc)]
+# comp_cancer_sleep_q4 <- comp_cancer_sleep_q4[!is.na(cancer_before_acc)]
+# comp_cancer_sleep_q4 <- dcast(comp_cancer_sleep_q4, cancer_before_acc + V3 ~ V2, value.var = "value")
+# 
+# ggplot(comp_cancer_sleep_q4, aes(x = cancer_before_acc, y = Estimate, group = V3)) +
+#   geom_pointrange(aes(ymin = Q2.5,
+#                       ymax = Q97.5, colour = V3)) +
+#   facet_wrap(~V3, scales = "free") +
+#   scale_colour_jco() +
+#   scale_fill_jco() +
+#   coord_flip() +
+#   theme_bw()
+# 
