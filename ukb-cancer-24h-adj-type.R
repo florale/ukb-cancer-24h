@@ -22,8 +22,8 @@ d_cancer_24h_type_adj <- emmeans::ref_grid(fit_cancer_24h_type_adj$model)@grid
 pred_cancer_24h_type_adj <- fitted(fit_cancer_24h_type_adj, newdata = d_cancer_24h_type_adj, scale = "response", summary = FALSE)
 
 # summarise by cancer types
-pred <- apply(pred_cancer_24h_type_adj, c(1), function(x)  cbind(d_cancer_24h_type_adj, x))
-pred <- lapply(pred, function(d) {
+pred_cancer_24h_type_adj <- apply(pred_cancer_24h_type_adj, c(1), function(x)  cbind(d_cancer_24h_type_adj, x))
+pred_cancer_24h_type_adj <- lapply(pred_cancer_24h_type_adj, function(d) {
   d <- as.data.table(d)
   
   # estimated means by cancer types
@@ -41,28 +41,28 @@ pred <- lapply(pred, function(d) {
   d <- d[, .(cancer_before_acc_type, 
              sleep, mvpa, lpa, sb,
              sleep_constrast, mvpa_constrast, lpa_constrast, sb_constrast
-             )]
+  )]
   d <- unique(d)
 })
 
 # assemble back to summarise posteriors
-pred <- as.data.frame(abind(pred, along = 1))
-pred <- split(pred, pred$cancer_before_acc_type)
+pred_cancer_24h_type_adj <- as.data.frame(abind(pred_cancer_24h_type_adj, along = 1))
+pred_cancer_24h_type_adj <- split(pred_cancer_24h_type_adj, pred_cancer_24h_type_adj$cancer_before_acc_type)
 
 ## Est means  ----------------------
-pred_comp_cancer_24h_type_adj <- lapply(pred, function(l) {
+pred_comp_cancer_24h_type_adj <- lapply(pred_cancer_24h_type_adj, function(l) {
   l <- as.data.frame(l[, c("sleep", "mvpa", "lpa", "sb")])
   l <- apply(l, 2, as.numeric)
   l <- apply(l, 2, describe_posterior, centrality = "mean")
   l <- Map(cbind, l, part = names(l))
   l <- rbindlist(l)
   l
-  })
+})
 pred_comp_cancer_24h_type_adj <- Map(cbind, pred_comp_cancer_24h_type_adj, cancer_before_acc_type = names(pred_comp_cancer_24h_type_adj))
 pred_comp_cancer_24h_type_adj <- rbindlist(pred_comp_cancer_24h_type_adj)
 
 ## Contrasts --------------------
-diff_comp_cancer_24h_type_adj <- lapply(pred, function(l) {
+diff_comp_cancer_24h_type_adj <- lapply(pred_cancer_24h_type_adj, function(l) {
   l <- as.data.frame(l[, c("sleep_constrast", "mvpa_constrast", "lpa_constrast", "sb_constrast")])
   l <- apply(l, 2, as.numeric)
   l <- apply(l, 2, describe_posterior, centrality = "mean")
@@ -85,26 +85,46 @@ comp_cancer_24h_type_adj <- cbind(
 
 # add sig indicators
 comp_cancer_24h_type_adj[, nonsig := between(0, comp_cancer_24h_type_adj$CI_low_diff, comp_cancer_24h_type_adj$CI_high_diff)]
-comp_cancer_24h_type_adj[, Sig := ifelse(nonsig == FALSE, "*", "")]
+comp_cancer_24h_type_adj[, Sig := ifelse(nonsig == FALSE, paste(intToUtf8(0x2217)), "")]
 
 # sort by MVPA
+# healthy as bottom in plot
+# comp_cancer_24h_type_adj[, cancer_before_acc_type := factor(cancer_before_acc_type, ordered = TRUE,
+#                                                             levels = c(
+#                                                               "Healthy",
+#                                                               "Other Skin",
+#                                                               "Prostate",
+#                                                               "Melanoma",
+#                                                               "Endocrine Gland",
+#                                                               "Breast",
+#                                                               "Genitourinary",
+#                                                               "Colorectal",
+#                                                               "Other Cancer",
+#                                                               "Gynaecological",
+#                                                               "Head & Neck",
+#                                                               "Blood",
+#                                                               "Gastrointestinal Tract",
+#                                                               "Lung",
+#                                                               "Multiple Primary"))]
+# healthy as top in plot
 comp_cancer_24h_type_adj[, cancer_before_acc_type := factor(cancer_before_acc_type, ordered = TRUE,
-                                                                 levels = c("Healthy",
-                                                                            "Other Skin",
-                                                                            "Prostate",
-                                                                            "Melanoma",
-                                                                            "Endocrine Gland",
-                                                                            "Breast",
-                                                                            "Genitourinary",
-                                                                            "Colorectal",
-                                                                            "Other Cancer",
-                                                                            "Gynaecological",
-                                                                            "Head & Neck",
-                                                                            "Blood",
-                                                                            "Gastrointestinal Tract",
-                                                                            "Lung",
-                                                                            "Multiple Primary"))]
-
+                                                            levels = c(
+                                                              "Multiple Primary",
+                                                              "Lung",
+                                                              "Gastrointestinal Tract",
+                                                              "Blood",
+                                                              "Head & Neck",
+                                                              "Gynaecological",
+                                                              "Other Cancer",
+                                                              "Colorectal",
+                                                              "Genitourinary",
+                                                              "Breast",
+                                                              "Endocrine Gland",
+                                                              "Melanoma",
+                                                              "Prostate",
+                                                              "Other Skin",
+                                                              "Healthy"
+                                                            ))]
 
 comp_cancer_24h_type_adj[, yintercept := NA]
 comp_cancer_24h_type_adj[, yintercept := ifelse(part == "sleep", comp_cancer_24h_type_adj[cancer_before_acc_type == "Healthy" & part == "sleep"]$Mean, yintercept)]
@@ -117,24 +137,30 @@ comp_cancer_24h_type_adj[, part := ifelse(part == "mvpa", "Minutes in Moderate-t
 comp_cancer_24h_type_adj[, part := ifelse(part == "lpa", "Minutes in Light physical activity", part)]
 comp_cancer_24h_type_adj[, part := ifelse(part == "sb", "Minutes in Sedentary behaviour", part)]
 
+comp_cancer_24h_type_adj[, text_position := max(CI_high), by = part]
+
 (plot_comp_cancer_24h_type_adj <- 
     ggplot(comp_cancer_24h_type_adj, aes(x = cancer_before_acc_type, y = Mean, group = part)) +
-    geom_hline(aes(yintercept = yintercept), linewidth = 0.2, linetype = 2) +
+    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
     geom_pointrange(aes(ymin = CI_low,
-                        ymax = CI_high, colour = part)) +
-    geom_text(aes(label = Sig, colour = part), 
-              size = 5, nudge_x = 0.15, nudge_y = 1.25, 
+                        ymax = CI_high, colour = cancer_before_acc_type)) +
+    geom_text(aes(y = text_position + 8, label = Sig, colour = cancer_before_acc_type), 
+              size = 5, 
+              # position = position_dodge2(width = 1),
               show.legend = FALSE) +
     facet_wrap(~part, scales = "free") +
-    scale_colour_jco() +
-    scale_fill_jco() +
+    scale_colour_manual(values = pal_type) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +      
     theme_ipsum() +
     theme(
-      axis.ticks        = element_blank(),
-      panel.background  = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
-      legend.position    = "none"
+      axis.ticks          = element_blank(),
+      panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+      plot.background     = element_rect(fill = "transparent", colour = NA),
+      panel.grid.major.x  = element_blank(),
+      panel.grid.minor    = element_blank(),
+      strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
+      legend.position     = "none"
     )
 )
 

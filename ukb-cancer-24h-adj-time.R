@@ -1,15 +1,15 @@
 source("ukb-cancer-24h-utils.R")
 source(paste0(redir, "ukb_utils.R"))
-source("ukb-cancer-24h-data.R")
+# source("ukb-cancer-24h-data.R")
 
 # main model --------
-fit_cancer_time_adj <- brmcoda(clr_cancer_acc,
-                               mvbind(ilr1, ilr2, ilr3) ~ cancer_time +
-                                 s(age) + sex + white + working + edu + never_smoked + current_drinker + deprivation,
-                               # save_pars = save_pars(all = TRUE),
-                               warmup = 500, chains = 4, cores = 4, backend = "cmdstanr",
-)
-saveRDS(fit_cancer_time_adj, paste0(outputdir, "fit_cancer_time_adj", ".RDS"))
+# fit_cancer_time_adj <- brmcoda(clr_cancer_acc,
+#                                mvbind(ilr1, ilr2, ilr3) ~ cancer_time +
+#                                  s(age) + sex + white + working + edu + never_smoked + current_drinker + deprivation,
+#                                # save_pars = save_pars(all = TRUE),
+#                                warmup = 500, chains = 4, cores = 4, backend = "cmdstanr",
+# )
+# saveRDS(fit_cancer_time_adj, paste0(outputdir, "fit_cancer_time_adj", ".RDS"))
 
 # estimates ------------
 fit_cancer_time_adj <- readRDS(paste0(outputdir, "fit_cancer_time_adj", ".RDS"))
@@ -116,11 +116,21 @@ comp_cancer_time_adj[, sig_ref_lag := ifelse(nonsig_vs_lag == FALSE & !is.na(Mea
 
 
 # sort by time since diagnoses
+# comp_cancer_time_adj[, cancer_time := factor(cancer_time, ordered = TRUE,
+#                                              levels = c(
+#                                                "Healthy",
+#                                                "Less than 1 year since diagnosis",
+#                                                "1-5 years since diagnosis",
+#                                                "More than 5 years since diagnosis"))]
+
+# healthy in first row of plot
 comp_cancer_time_adj[, cancer_time := factor(cancer_time, ordered = TRUE,
-                                                 levels = c("Healthy",
-                                                            "Less than 1 year since diagnosis",
-                                                            "1-5 years since diagnosis",
-                                                            "More than 5 years since diagnosis"))]
+                                             levels = c(
+                                               "More than 5 years since diagnosis",
+                                               "1-5 years since diagnosis",
+                                               "Less than 1 year since diagnosis",
+                                               "Healthy"))]
+
 comp_cancer_time_adj[, yintercept := NA]
 comp_cancer_time_adj[, yintercept := ifelse(part == "sleep", comp_cancer_time_adj[cancer_time == "Healthy" & part == "sleep"]$Mean, yintercept)]
 comp_cancer_time_adj[, yintercept := ifelse(part == "mvpa", comp_cancer_time_adj[cancer_time == "Healthy" & part == "mvpa"]$Mean, yintercept)]
@@ -132,26 +142,32 @@ comp_cancer_time_adj[, part := ifelse(part == "mvpa", "Minutes in Moderate-to-vi
 comp_cancer_time_adj[, part := ifelse(part == "lpa", "Minutes in Light physical activity", part)]
 comp_cancer_time_adj[, part := ifelse(part == "sb", "Minutes in Sedentary behaviour", part)]
 
+comp_cancer_time_adj[, text_position := max(CI_high), by = part]
+
 (plot_comp_cancer_time_adj <- 
     ggplot(comp_cancer_time_adj, aes(x = cancer_time, y = Mean, group = part)) +
-    geom_hline(aes(yintercept = yintercept), linewidth = 0.2, linetype = 2) +
+    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
     geom_pointrange(aes(ymin = CI_low,
-                        ymax = CI_high, colour = part)) +
-    geom_text(aes(label = sig_ref_healthy, colour = part), 
-              size = 3, nudge_x = 0.2, nudge_y = 1, 
+                        ymax = CI_high, colour = cancer_time), size = 0.75, linewidth = 0.75) +
+    geom_text(aes(y = text_position + 3, label = sig_ref_healthy, colour = cancer_time), 
+              size = 4, nudge_x = 0.2, 
               show.legend = FALSE) +
-    geom_text(aes(label = sig_ref_lag, colour = part), 
-              size = 3, nudge_x = 0.2, nudge_y = 1.5, 
+    geom_text(aes(y = text_position + 4, label = sig_ref_lag, colour = cancer_time), 
+              size = 4, nudge_x = 0.2,
               show.legend = FALSE) +
     facet_wrap(~part, scales = "free") +
-    scale_colour_jco() +
-    scale_fill_jco() +
+    scale_colour_manual(values = pal_time) +
+    # scale_colour_jco() +
     labs(x = "", y = "", colour = "") +
     coord_flip() +      
     theme_ipsum() +
     theme(
-      axis.ticks        = element_blank(),
-      panel.background  = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
-      legend.position    = "none"
+      axis.ticks          = element_blank(),
+      panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+      plot.background     = element_rect(fill = "transparent", colour = NA),
+      panel.grid.major.x  = element_blank(),
+      panel.grid.minor    = element_blank(),
+      strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
+      legend.position     = "none"
     )
 )

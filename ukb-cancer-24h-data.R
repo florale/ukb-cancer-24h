@@ -41,8 +41,6 @@ icd_ii_subtype_vars <- c(
 )
 # icd_ii_cns_vars <- c("icd_ii_c69_c72")
 
-ilr_vars <- grep("ilr", names(d_acc_icd), value = TRUE)
-
 # Cancer variables  ---------------
 # also consider 13 cancer composite related to PA
 # (bladder, breast, colon, endometrial, oesophageal adenocarcinoma, gastric cardia, head and neck, kidney, liver, lung, myeloid leukaemia, myeloma, and rectum)
@@ -233,7 +231,8 @@ table(d_cancer_acc$cancer_time, useNA = "always")
 saveRDS(d_cancer_acc, paste0(outputdir, "d_cancer_acc", ".RDS"))
 
 # Composition and ilr ----------------------
-d_cancer_acc <- d_cancer_acc[, -ilr_vars, with = FALSE]
+d_cancer_acc <- readRDS(paste0(outputdir, "d_cancer_acc", ".RDS"))
+d_cancer_acc <- d_cancer_acc[, -grep("ilr", names(d_cancer_acc), value = TRUE), with = FALSE]
 
 sbp <- matrix(c(
   1, -1, -1,-1,
