@@ -72,6 +72,7 @@ d_acc_icd[, icd_ii_fo := do.call(pmin, c(.SD, list(na.rm = TRUE))), .SDcols = ic
 # last occurrence of cancer diagnosis if any
 d_acc_icd[, icd_ii_lo := do.call(pmax, c(.SD, list(na.rm = TRUE))), .SDcols = icd_ii_fo_vars]
 
+# censor 2 years to exclude from healthy --------
 # time since most recent cancer diagnoses
 d_acc_icd[, age_diff_cancer_acc := NA]
 d_acc_icd[, age_diff_cancer_acc := ifelse(cancer == "Healthy", 0, age_diff_cancer_acc)]
@@ -80,6 +81,12 @@ table(d_acc_icd$age_diff_cancer_acc, useNA = "always")
 
 # censor 2 years to exclude from healthy
 d_acc_icd[age_diff_cancer_acc %in% c(-2, -1), age_diff_cancer_acc := NA]
+
+## TO ADD other health conditions
+
+# main variables
+
+
 
 # time since cancer diagnosis
 # d_acc_icd[, age_at_cancer := year(icd_ii_fo) - year_birth]

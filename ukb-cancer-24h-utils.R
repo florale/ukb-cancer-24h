@@ -122,7 +122,7 @@ pal_time_quantile <- c("#666666", "#4682b4", "#f5c98e", "#9c6755",
 #   "#ad616c"
 # )
 
-pal_jco()(10)
+# pal_jco()(10)
 scales::show_col(dutchmasters_pal("milkmaid")(15))
 
 scales::show_col(tvthemes:::brooklyn99_palette$Dark)
@@ -146,3 +146,4 @@ scales::show_col(tvthemes:::westeros_palette$Tully)
 scales::show_col(tvthemes:::westeros_palette$Greyjoy)
 scales::show_col(tvthemes:::westeros_palette$Manderly)
 scales::show_col(tvthemes:::westeros_palette$Arryn)
+
