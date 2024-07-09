@@ -41,8 +41,8 @@ icd_ii_subtype_vars <- c(
 )
 # icd_ii_cns_vars <- c("icd_ii_c69_c72")
 
-# Cancer variables  ---------------
-# also consider 13 cancer composite related to PA
+# cancer data management  ---------------
+# notes for Flora: 13 cancer composite related to PA
 # (bladder, breast, colon, endometrial, oesophageal adenocarcinoma, gastric cardia, head and neck, kidney, liver, lung, myeloid leukaemia, myeloma, and rectum)
 d_acc_icd[, icd_not_cancer := ifelse((Reduce(`|`, lapply(icd_not_cancer_any_vars, function(v) f1(get(v), 1)))),
                                      1, 0)]
@@ -66,13 +66,16 @@ d_acc_icd[, cancer := relevel(cancer, ref = "Healthy")]
 
 table(d_acc_icd$cancer, useNA = "always")
 
+# censor 1 years to exclude from healthy --------
 # first occurrence of cancer diagnosis if any
 d_acc_icd[, icd_ii_fo := do.call(pmin, c(.SD, list(na.rm = TRUE))), .SDcols = icd_ii_fo_vars]
 
 # last occurrence of cancer diagnosis if any
 d_acc_icd[, icd_ii_lo := do.call(pmax, c(.SD, list(na.rm = TRUE))), .SDcols = icd_ii_fo_vars]
 
-# censor 2 years to exclude from healthy --------
+# last occurrence (most recent) of other health conditions if any
+d_acc_icd[, icd_not_ii_lo := do.call(pmax, c(.SD, list(na.rm = TRUE))), .SDcols = icd_ii_fo_vars]
+
 # time since most recent cancer diagnoses
 d_acc_icd[, age_diff_cancer_acc := NA]
 d_acc_icd[, age_diff_cancer_acc := ifelse(cancer == "Healthy", 0, age_diff_cancer_acc)]
@@ -82,12 +85,17 @@ table(d_acc_icd$age_diff_cancer_acc, useNA = "always")
 # censor 2 years to exclude from healthy
 d_acc_icd[age_diff_cancer_acc %in% c(-2, -1), age_diff_cancer_acc := NA]
 
-## TO ADD other health conditions
+## censoring other health conditions
+d_acc_icd[, age_diff_other_cond_acc := NA]
+d_acc_icd[, age_diff_other_cond_acc := ifelse(cancer == "Healthy", 0, age_diff_other_cond_acc)]
+d_acc_icd[, age_diff_other_cond_acc := ifelse(cancer == "Cancer", year(acc_startdate) - year(icd_ii_lo), age_diff_other_cond_acc)]
+table(d_acc_icd$age_diff_other_cond_acc, useNA = "always")
 
-# main variables
+# censor 2 years to exclude from healthy
+d_acc_icd[age_diff_other_cond_acc %in% c(-2, -1), age_diff_other_cond_acc := NA]
 
 
-
+# main cancer predictor variables ----------------
 # time since cancer diagnosis
 # d_acc_icd[, age_at_cancer := year(icd_ii_fo) - year_birth]
 d_acc_icd[, cancer_time := cut(age_diff_cancer_acc,
