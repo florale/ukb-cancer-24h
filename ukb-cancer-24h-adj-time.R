@@ -45,15 +45,15 @@ pred_cancer_time_adj <- lapply(pred_cancer_time_adj, function(d) {
   d[, mvpa_lessthan1_vs_1to5 := d[cancer_time == "1-5 years since diagnosis"]$mvpa[1] - d[cancer_time == "Less than 1 year since diagnosis"]$mvpa[1]]
   d[, mvpa_lessthan1_vs_morethan5 := d[cancer_time == "More than 5 years since diagnosis"]$mvpa[1] - d[cancer_time == "Less than 1 year since diagnosis"]$mvpa[1]]
   d[, mvpa_1to5_vs_morethan5 := d[cancer_time == "More than 5 years since diagnosis"]$mvpa[1] - d[cancer_time == "1-5 years since diagnosis"]$mvpa[1]]
-
+  
   d[, lpa_lessthan1_vs_1to5 := d[cancer_time == "1-5 years since diagnosis"]$lpa[1] - d[cancer_time == "Less than 1 year since diagnosis"]$lpa[1]]
   d[, lpa_lessthan1_vs_morethan5 := d[cancer_time == "More than 5 years since diagnosis"]$lpa[1] - d[cancer_time == "Less than 1 year since diagnosis"]$lpa[1]]
   d[, lpa_1to5_vs_morethan5 := d[cancer_time == "More than 5 years since diagnosis"]$lpa[1] - d[cancer_time == "1-5 years since diagnosis"]$lpa[1]]
-
+  
   d[, sb_lessthan1_vs_1to5 := d[cancer_time == "1-5 years since diagnosis"]$sb[1] - d[cancer_time == "Less than 1 year since diagnosis"]$sb[1]]
   d[, sb_lessthan1_vs_morethan5 := d[cancer_time == "More than 5 years since diagnosis"]$sb[1] - d[cancer_time == "Less than 1 year since diagnosis"]$sb[1]]
   d[, sb_1to5_vs_morethan5 := d[cancer_time == "More than 5 years since diagnosis"]$sb[1] - d[cancer_time == "1-5 years since diagnosis"]$sb[1]]
-
+  
   d <- d[, .(cancer_time, 
              sleep, mvpa, lpa, sb,
              
@@ -101,9 +101,14 @@ setnames(diff1_comp_cancer_time_adj, "Mean", "Mean_diff_ref_healthy")
 setnames(diff1_comp_cancer_time_adj, "CI_low", "CI_low_diff_ref_healthy")
 setnames(diff1_comp_cancer_time_adj, "CI_high", "CI_high_diff_ref_healthy")
 
-### vs lag
+### pairwise cancer
 diff2_comp_cancer_time_adj <- lapply(pred_cancer_time_adj, function(l) {
-  l <- as.data.frame(l[, c("sleep_vs_lag", "mvpa_vs_lag", "lpa_vs_lag", "sb_vs_lag" )])
+  l <- as.data.frame(l[, c(
+    "sleep_lessthan1_vs_1to5", "sleep_lessthan1_vs_morethan5", "sleep_1to5_vs_morethan5",
+    "mvpa_lessthan1_vs_1to5", "mvpa_lessthan1_vs_morethan5", "mvpa_1to5_vs_morethan5",
+    "lpa_lessthan1_vs_1to5", "lpa_lessthan1_vs_morethan5", "lpa_1to5_vs_morethan5",
+    "sb_lessthan1_vs_1to5", "sb_lessthan1_vs_morethan5", "sleep_1to5_vs_morethan5"
+  )])
   l <- apply(l, 2, as.numeric)
   l <- apply(l, 2, describe_posterior, centrality = "mean")
   l <- Map(cbind, l, constrast = names(l))
