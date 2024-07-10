@@ -38,3 +38,4 @@ vignettes/*.pdf
 .DS_Store
 
 .RDataTmp
+d_acc_icd.RDS
