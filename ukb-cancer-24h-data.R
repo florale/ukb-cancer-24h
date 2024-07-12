@@ -73,6 +73,7 @@ nrow(d_acc_icd[!is.na(icd_ii_sub_lo)])
 nrow(d_acc_icd[!is.na(icd_not_ii_sub_lo)])
 
 # time since most recent cancer diagnoses
+## negative value means acc is before diagnosis
 d_acc_icd[, age_diff_cancer_acc := year(acc_startdate) - year(icd_ii_sub_lo)]
 table(d_acc_icd$age_diff_cancer_acc, useNA = "always")
 
@@ -253,13 +254,17 @@ clr_cancer_acc <- complr(data = d_cancer_acc,
                          total = 1440)
 
 # descriptives ----------------------------
-egltable(c("cancer_before_acc_type",
-           "sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp", #acomp and 0 imputed
-           "sleep", "mvpa", "lpa", "sb" # raw
-), strict = FALSE, data = d_acc_icd_ii)
+## demographics - group by cancer vs healthy
 
 
+## main variables - group by cancer vs healthy
 egltable(c(
   "sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp", #acomp and 0 imputed
   "sleep", "mvpa", "lpa", "sb" # raw
-), strict = FALSE, g = "icd_ii_subtype", data = d_acc_icd_ii)
+), strict = FALSE, g = "cancer_before_acc", data = d_cancer_acc)
+
+## main variables - group by cancer types
+egltable(c(
+  "sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp", #acomp and 0 imputed
+  "sleep", "mvpa", "lpa", "sb" # raw
+), strict = FALSE, g = "cancer_before_acc_type", data = d_cancer_acc)
