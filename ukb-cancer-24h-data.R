@@ -49,19 +49,20 @@ d_acc_icd[, icd_not_cancer := ifelse((Reduce(`|`, lapply(icd_not_cancer_any_vars
 
 table(d_acc_icd$icd_not_cancer, useNA = "always")
 table(d_acc_icd$icd_ii_any, useNA = "always")
+table(d_acc_icd$icd_ii_group, useNA = "always")
 
 d_acc_icd[, icd_ii_comorbid := NA]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_any %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 0, "Only cancer", icd_ii_comorbid)]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_any %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 1, "Cancer comorbid", icd_ii_comorbid)]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_any == "No" & icd_not_cancer == 1, "Only other conditions", icd_ii_comorbid)]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_any == "No" & icd_not_cancer == 0, "Healthy", icd_ii_comorbid)]
+d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 0, "Only cancer", icd_ii_comorbid)]
+d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 1, "Cancer comorbid", icd_ii_comorbid)]
+d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group == "No" & icd_not_cancer == 1, "Only other conditions", icd_ii_comorbid)]
+d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group == "No" & icd_not_cancer == 0, "Healthy", icd_ii_comorbid)]
 
 table(d_acc_icd$icd_ii_comorbid, useNA = "always")
 
 d_acc_icd[, health_condition := NA]
-d_acc_icd[, health_condition := ifelse(icd_ii_any %in% c("One Primary", "Multiple Primary"), "Cancer", health_condition)]
-d_acc_icd[, health_condition := ifelse(icd_ii_any == "No" & icd_not_cancer == 1, "Only other conditions", health_condition)]
-d_acc_icd[, health_condition := ifelse(icd_ii_any == "No" & icd_not_cancer == 0, "Healthy", health_condition)]
+d_acc_icd[, health_condition := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary"), "Cancer", health_condition)]
+d_acc_icd[, health_condition := ifelse(icd_ii_group == "No" & icd_not_cancer == 1, "Only other conditions", health_condition)]
+d_acc_icd[, health_condition := ifelse(icd_ii_group == "No" & icd_not_cancer == 0, "Healthy", health_condition)]
 
 d_acc_icd[, health_condition := as.factor(health_condition)]
 d_acc_icd[, health_condition := relevel(health_condition, ref = "Healthy")]
@@ -72,24 +73,27 @@ table(d_acc_icd$health_condition, useNA = "always")
 nrow(d_acc_icd[!is.na(icd_ii_sub_lo)])
 nrow(d_acc_icd[!is.na(icd_not_ii_sub_lo)])
 
-# time since most recent cancer diagnoses
+# time since first cancer diagnoses
 ## negative value means acc is before diagnosis
-d_acc_icd[, age_diff_cancer_acc := year(acc_startdate) - year(icd_ii_sub_lo)]
+d_acc_icd[, age_diff_cancer_acc := year(acc_startdate) - year(icd_ii_sub_fo)]
 table(d_acc_icd$age_diff_cancer_acc, useNA = "always")
 
 # time since most recent other diagnoses
-d_acc_icd[, age_diff_other_cond_acc := year(acc_startdate) - year(icd_not_ii_sub_lo)]
+d_acc_icd[, age_diff_other_cond_acc := year(acc_startdate) - year(icd_not_ii_sub_fo)]
 table(d_acc_icd$age_diff_other_cond_acc, useNA = "always")
 
 # censor 1 years to exclude from healthy
 d_acc_icd[age_diff_cancer_acc %in% c(-1, 0), age_diff_cancer_acc := NA]
-# d_acc_icd[age_diff_other_cond_acc %in% c(-1, 0), age_diff_other_cond_acc := NA]
+d_acc_icd[age_diff_other_cond_acc %in% c(-1, 0), age_diff_other_cond_acc := NA]
 
 # add the ones that always healthy to healthy (0)
 d_acc_icd[, age_diff_cancer_acc := ifelse(health_condition == "Healthy", 0, age_diff_cancer_acc)]
 
-# add the ones that have other health conds after 1y since acc to healthy (0) n = 42,510
+# add first other health conds after 1y since acc to healthy (0)
 d_acc_icd[, age_diff_cancer_acc := ifelse(age_diff_other_cond_acc < -1 & health_condition == "Only other conditions", 0, age_diff_cancer_acc)]
+
+# add first cancer diagnosis after 1y of acc to healthy
+d_acc_icd[, age_diff_cancer_acc := ifelse(age_diff_cancer_acc < -1 & health_condition == "Cancer", 0, age_diff_cancer_acc)]
 
 table(d_acc_icd$age_diff_cancer_acc, useNA = "always")
 

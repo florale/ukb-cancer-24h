@@ -3,14 +3,14 @@ source(paste0(redir, "ukb_utils.R"))
 source("ukb-cancer-24h-data.R")
 
 # main model --------
-fit_cancer_type_adj <- brmcoda(clr_cancer_acc,
-                                   mvbind(ilr1, ilr2, ilr3) ~ cancer_before_acc_type +
-                                     age_diff_cancer_acc +
-                                     s(age) + sex + white + working + edu + never_smoked + current_drinker + deprivation,
-                                   # save_pars = save_pars(all = TRUE),
-                                   warmup = 500, chains = 4, cores = 4, backend = "cmdstanr",
-)
-saveRDS(fit_cancer_type_adj, paste0(outputdir, "fit_cancer_type_adj", ".RDS"))
+# fit_cancer_type_adj <- brmcoda(clr_cancer_acc,
+#                                mvbind(ilr1, ilr2, ilr3) ~ cancer_before_acc_type +
+#                                  age_diff_cancer_acc +
+#                                  s(age) + sex + white + working + edu + never_smoked + current_drinker + deprivation,
+#                                # save_pars = save_pars(all = TRUE),
+#                                warmup = 500, chains = 4, cores = 4, backend = "cmdstanr",
+# )
+# saveRDS(fit_cancer_type_adj, paste0(outputdir, "fit_cancer_type_adj", ".RDS"))
 
 # Predicted posteriors ------------
 fit_cancer_type_adj <- readRDS(paste0(outputdir, "fit_cancer_type_adj", ".RDS"))
@@ -108,23 +108,23 @@ comp_cancer_type_adj[, Sig := ifelse(nonsig == FALSE, paste(intToUtf8(0x2217)), 
 #                                                               "Multiple Primary"))]
 # healthy as top in plot
 comp_cancer_type_adj[, cancer_before_acc_type := factor(cancer_before_acc_type, ordered = TRUE,
-                                                            levels = c(
-                                                              "Multiple Primary",
-                                                              "Lung",
-                                                              "Gastrointestinal Tract",
-                                                              "Blood",
-                                                              "Head & Neck",
-                                                              "Gynaecological",
-                                                              "Other Cancer",
-                                                              "Colorectal",
-                                                              "Genitourinary",
-                                                              "Breast",
-                                                              "Endocrine Gland",
-                                                              "Melanoma",
-                                                              "Prostate",
-                                                              "Other Skin",
-                                                              "Healthy"
-                                                            ))]
+                                                        levels = c(
+                                                          "Multiple Primary",
+                                                          "Lung",
+                                                          "Gastrointestinal Tract",
+                                                          "Blood",
+                                                          "Head & Neck",
+                                                          "Gynaecological",
+                                                          "Colorectal",
+                                                          "Breast",
+                                                          "Genitourinary",
+                                                          "Endocrine Gland",
+                                                          "Other Cancer",
+                                                          "Melanoma",
+                                                          "Prostate",
+                                                          "Other Skin",
+                                                          "Healthy"
+                                                        ))]
 
 comp_cancer_type_adj[, yintercept := NA]
 comp_cancer_type_adj[, yintercept := ifelse(part == "sleep", comp_cancer_type_adj[cancer_before_acc_type == "Healthy" & part == "sleep"]$Mean, yintercept)]
@@ -132,10 +132,10 @@ comp_cancer_type_adj[, yintercept := ifelse(part == "mvpa", comp_cancer_type_adj
 comp_cancer_type_adj[, yintercept := ifelse(part == "lpa", comp_cancer_type_adj[cancer_before_acc_type == "Healthy" & part == "lpa"]$Mean, yintercept)]
 comp_cancer_type_adj[, yintercept := ifelse(part == "sb", comp_cancer_type_adj[cancer_before_acc_type == "Healthy" & part == "sb"]$Mean, yintercept)]
 
-comp_cancer_type_adj[, part := ifelse(part == "sleep", "Minutes in Sleep", part)]
-comp_cancer_type_adj[, part := ifelse(part == "mvpa", "Minutes in Moderate-to-vigorous physical activity", part)]
-comp_cancer_type_adj[, part := ifelse(part == "lpa", "Minutes in Light physical activity", part)]
-comp_cancer_type_adj[, part := ifelse(part == "sb", "Minutes in Sedentary behaviour", part)]
+comp_cancer_type_adj[, part := ifelse(part == "sleep", "Sleep", part)]
+comp_cancer_type_adj[, part := ifelse(part == "mvpa", "Moderate-to-vigorous physical activity", part)]
+comp_cancer_type_adj[, part := ifelse(part == "lpa", "Light physical activity", part)]
+comp_cancer_type_adj[, part := ifelse(part == "sb", "Sedentary behaviour", part)]
 
 comp_cancer_type_adj[, text_position := max(CI_high), by = part]
 
@@ -145,7 +145,7 @@ comp_cancer_type_adj[, text_position := max(CI_high), by = part]
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type)) +
     geom_text(aes(y = text_position + 8, label = Sig, colour = cancer_before_acc_type), 
-              size = 5, 
+              size = 5.5, 
               # position = position_dodge2(width = 1),
               show.legend = FALSE) +
     facet_wrap(~part, scales = "free") +
@@ -164,7 +164,13 @@ comp_cancer_type_adj[, text_position := max(CI_high), by = part]
     )
 )
 
-
+grDevices::cairo_pdf(
+  file = paste0(outputdir, "cancer_type_adj", ".pdf"),
+  width = 11,
+  height = 10,
+)
+plot_comp_cancer_type_adj
+dev.off()
 
 
 
