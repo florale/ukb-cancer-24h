@@ -12,17 +12,17 @@ pal_time <- c("#EAD3BF", "#B49797", "#708885", "#5A6367")
 # pal_type <- c("#666666", "#f6e0d2", "#9c6755", "#659794", "#dfa398", "#f5c98e", "#d65b5a", "#586085", 
 #               "#6ca9c3", "#d1a391", "#7b906f", "#c0a5aa", "#7083a4", "#ad616c", "#4d3944")
 
-# pal_type <- c("#666666", 
-#               "#d65b5a", "#ba6c6e", "#efcbcb", "#dfa398", "#9c6755", "#ea967c", "#f5c98e", 
-#               "#659794", "#7b906f", "#8CAACB", "#7083a4", "#395b85", "#635761",
-#               "#ad616c"
-# )
-
-pal_type <- c("#ad616c",
-              "#635761", "#395b85", "#7083a4", "#8CAACB", "#7b906f", "#659794", 
-              "#f5c98e", "#ea967c", "#9c6755", "#dfa398", "#efcbcb", "#ba6c6e", "#d65b5a", 
-              "#666666"
+pal_type <- c("#4E2F26",
+              "#944C4C", "#d65b5a", "#efcbcb", "#dfa398", "#9c6755", "#ea967c", "#f5c98e",
+              "#8DA290", "#4F7375", "#8CAACB", "#7083a4", "#395b85", "#666666",
+              "#ad616c"
 )
+
+# pal_type <- c("#1e2142",
+#               "#395b85", "#7083a4", "#8CAACB", "#7b906f", "#659794", 
+#               "#f5c98e", "#ea967c", "#9c6755", "#dfa398", "#efcbcb", "#c24841", "#ba6c6e",
+#               "#3d251e"
+# )
 
 # pal_type_quantile <- c("#666666", 
 #                        "#d65b5a", "#ba6c6e", "#efcbcb", "#dfa398", "#9c6755", "#ea967c", "#f5c98e", 
@@ -123,7 +123,7 @@ pal_time_quantile <- c("#666666", "#4682b4", "#f5c98e", "#9c6755",
 # )
 
 # pal_jco()(10)
-scales::show_col(dutchmasters_pal("milkmaid")(15))
+scales::show_col(dutchmasters::dutchmasters_pal("milkmaid")(15))
 
 scales::show_col(tvthemes:::brooklyn99_palette$Dark)
 

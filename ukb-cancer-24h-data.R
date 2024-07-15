@@ -6,9 +6,9 @@
 # flora's
 source("ukb-cancer-24h-utils.R")
 source(paste0(redir, "ukb_utils.R"))
- 
+
 # source(paste0(redir, "data/data_acc_icd.R"))
-d_acc_icd <- readRDS(paste0(outputdir, "d_acc_icd", ".RDS"))
+d_acc_icd <- readRDS(paste0(inputdir, "d_acc_icd", ".RDS"))
 
 # var names --------------
 icd_not_cancer_any_vars <- c(
@@ -46,168 +46,168 @@ icd_ii_subtype_vars <- c(
 # (bladder, breast, colon, endometrial, oesophageal adenocarcinoma, gastric cardia, head and neck, kidney, liver, lung, myeloid leukaemia, myeloma, and rectum)
 d_acc_icd[, icd_not_cancer := ifelse((Reduce(`|`, lapply(icd_not_cancer_any_vars, function(v) f1(get(v), 1)))),
                                      1, 0)]
+
 table(d_acc_icd$icd_not_cancer, useNA = "always")
+table(d_acc_icd$icd_ii_any, useNA = "always")
+table(d_acc_icd$icd_ii_group, useNA = "always")
 
 d_acc_icd[, icd_ii_comorbid := NA]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_any %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 0, "Only cancer", icd_ii_comorbid)]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_any %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 1, "Cancer comorbid", icd_ii_comorbid)]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_any == "No" & icd_not_cancer == 1, "Only other conditions", icd_ii_comorbid)]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_any == "No" & icd_not_cancer == 0, "Healthy", icd_ii_comorbid)]
+d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 0, "Only cancer", icd_ii_comorbid)]
+d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 1, "Cancer comorbid", icd_ii_comorbid)]
+d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group == "No" & icd_not_cancer == 1, "Only other conditions", icd_ii_comorbid)]
+d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group == "No" & icd_not_cancer == 0, "Healthy", icd_ii_comorbid)]
 
 table(d_acc_icd$icd_ii_comorbid, useNA = "always")
 
-d_acc_icd[, cancer := NA]
-d_acc_icd[, cancer := ifelse(icd_ii_any %in% c("One Primary", "Multiple Primary"), "Cancer", cancer)]
-d_acc_icd[, cancer := ifelse(icd_ii_any == "No" & icd_not_cancer == 1, "Only other conditions", cancer)]
-d_acc_icd[, cancer := ifelse(icd_ii_any == "No" & icd_not_cancer == 0, "Healthy", cancer)]
+d_acc_icd[, health_condition := NA]
+d_acc_icd[, health_condition := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary"), "Cancer", health_condition)]
+d_acc_icd[, health_condition := ifelse(icd_ii_group == "No" & icd_not_cancer == 1, "Only other conditions", health_condition)]
+d_acc_icd[, health_condition := ifelse(icd_ii_group == "No" & icd_not_cancer == 0, "Healthy", health_condition)]
 
-d_acc_icd[, cancer := as.factor(cancer)]
-d_acc_icd[, cancer := relevel(cancer, ref = "Healthy")]
+d_acc_icd[, health_condition := as.factor(health_condition)]
+d_acc_icd[, health_condition := relevel(health_condition, ref = "Healthy")]
 
-table(d_acc_icd$cancer, useNA = "always")
+table(d_acc_icd$health_condition, useNA = "always")
 
 # censor 1 years to exclude from healthy --------
-# first occurrence of cancer diagnosis if any
-d_acc_icd[, icd_ii_fo := do.call(pmin, c(.SD, list(na.rm = TRUE))), .SDcols = icd_ii_fo_vars]
+nrow(d_acc_icd[!is.na(icd_ii_sub_lo)])
+nrow(d_acc_icd[!is.na(icd_not_ii_sub_lo)])
 
-# last occurrence of cancer diagnosis if any
-d_acc_icd[, icd_ii_lo := do.call(pmax, c(.SD, list(na.rm = TRUE))), .SDcols = icd_ii_fo_vars]
-
-# last occurrence (most recent) of other health conditions if any
-d_acc_icd[, icd_not_ii_lo := do.call(pmax, c(.SD, list(na.rm = TRUE))), .SDcols = icd_ii_fo_vars]
-
-# time since most recent cancer diagnoses
-d_acc_icd[, age_diff_cancer_acc := NA]
-d_acc_icd[, age_diff_cancer_acc := ifelse(cancer == "Healthy", 0, age_diff_cancer_acc)]
-d_acc_icd[, age_diff_cancer_acc := ifelse(cancer == "Cancer", year(acc_startdate) - year(icd_ii_lo), age_diff_cancer_acc)]
+# time since first cancer diagnoses
+## negative value means acc is before diagnosis
+d_acc_icd[, age_diff_cancer_acc := year(acc_startdate) - year(icd_ii_sub_fo)]
 table(d_acc_icd$age_diff_cancer_acc, useNA = "always")
 
-# censor 2 years to exclude from healthy
-d_acc_icd[age_diff_cancer_acc %in% c(-2, -1), age_diff_cancer_acc := NA]
-
-## censoring other health conditions
-d_acc_icd[, age_diff_other_cond_acc := NA]
-d_acc_icd[, age_diff_other_cond_acc := ifelse(cancer == "Healthy", 0, age_diff_other_cond_acc)]
-d_acc_icd[, age_diff_other_cond_acc := ifelse(cancer == "Cancer", year(acc_startdate) - year(icd_ii_lo), age_diff_other_cond_acc)]
+# time since most recent other diagnoses
+d_acc_icd[, age_diff_other_cond_acc := year(acc_startdate) - year(icd_not_ii_sub_fo)]
 table(d_acc_icd$age_diff_other_cond_acc, useNA = "always")
 
-# censor 2 years to exclude from healthy
-d_acc_icd[age_diff_other_cond_acc %in% c(-2, -1), age_diff_other_cond_acc := NA]
+# censor 1 years to exclude from healthy
+d_acc_icd[age_diff_cancer_acc %in% c(-1, 0), age_diff_cancer_acc := NA]
+d_acc_icd[age_diff_other_cond_acc %in% c(-1, 0), age_diff_other_cond_acc := NA]
 
+# add the ones that always healthy to healthy (0)
+d_acc_icd[, age_diff_cancer_acc := ifelse(health_condition == "Healthy", 0, age_diff_cancer_acc)]
+
+# add first other health conds after 1y since acc to healthy (0)
+d_acc_icd[, age_diff_cancer_acc := ifelse(age_diff_other_cond_acc < -1 & health_condition == "Only other conditions", 0, age_diff_cancer_acc)]
+
+# add first cancer diagnosis after 1y of acc to healthy
+d_acc_icd[, age_diff_cancer_acc := ifelse(age_diff_cancer_acc < -1 & health_condition == "Cancer", 0, age_diff_cancer_acc)]
+
+table(d_acc_icd$age_diff_cancer_acc, useNA = "always")
 
 # main cancer predictor variables ----------------
 # time since cancer diagnosis
 # d_acc_icd[, age_at_cancer := year(icd_ii_fo) - year_birth]
-d_acc_icd[, cancer_time := cut(age_diff_cancer_acc,
-                               breaks = c(-Inf, 0, 1, 5, Inf),
-                               labels = c("Healthy",
-                                          "Less than 1 year since diagnosis",
-                                          "1-5 years since diagnosis",
-                                          "More than 5 years since diagnosis"))]
-d_acc_icd[, cancer_time := as.factor(cancer_time)]
-table(d_acc_icd$cancer_time, useNA = "always")
+d_acc_icd[, cancer_time_since_diag := cut(age_diff_cancer_acc,
+                                          breaks = c(-Inf, 0, 1, 5, Inf),
+                                          labels = c("Healthy",
+                                                     "Less than 1 year since diagnosis",
+                                                     "1-5 years since diagnosis",
+                                                     "More than 5 years since diagnosis"))]
+d_acc_icd[, cancer_time_since_diag := as.factor(cancer_time_since_diag)]
+table(d_acc_icd$cancer_time_since_diag, useNA = "always")
 
-d_acc_icd[, cancer_time_5g := cut(age_diff_cancer_acc, 
-                               breaks = c(-Inf, 0, 1, 5, 10, Inf),
-                               labels = c("Healthy",
-                                          "Less than 1 year since diagnosis",
-                                          "1-5 years since diagnosis", 
-                                          "5-10 years since diagnosis", 
-                                          "More than 10 years since diagnosis"))]
-d_acc_icd[, cancer_time_5g := as.factor(cancer_time_5g)]
-table(d_acc_icd$cancer_time_5g, useNA = "always")
+d_acc_icd[, cancer_time_since_diag_5g := cut(age_diff_cancer_acc, 
+                                  breaks = c(-Inf, 0, 1, 5, 10, Inf),
+                                  labels = c("Healthy",
+                                             "Less than 1 year since diagnosis",
+                                             "1-5 years since diagnosis", 
+                                             "5-10 years since diagnosis", 
+                                             "More than 10 years since diagnosis"))]
+d_acc_icd[, cancer_time_since_diag_5g := as.factor(cancer_time_since_diag_5g)]
+table(d_acc_icd$cancer_time_since_diag_5g, useNA = "always")
 
 # factor cancer vs healthy
 d_acc_icd[, cancer_before_acc := NA]
-d_acc_icd[, cancer_before_acc := ifelse(age_diff_cancer_acc %between% c(-Inf, 0), 0, cancer_before_acc)]
-d_acc_icd[, cancer_before_acc := ifelse(age_diff_cancer_acc %between% c(0.1, Inf), 1, cancer_before_acc)]
+d_acc_icd[, cancer_before_acc := ifelse(cancer_time_since_diag == "Healthy", 0, cancer_before_acc)]
+d_acc_icd[, cancer_before_acc := ifelse(cancer_time_since_diag != "Healthy", 1, cancer_before_acc)]
 d_acc_icd[, cancer_before_acc := factor(cancer_before_acc, levels = c(0, 1), labels = c("Healthy", "Cancer"))]
-d_acc_icd[, cancer_before_acc := relevel(cancer_before_acc, ref = "Healthy")]
-
 table(d_acc_icd$cancer_before_acc, useNA = "always")
 
 # type
 d_acc_icd[, cancer_before_acc_type := NA]
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_gynaecological_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_gynaecological_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Gynaecological", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_gynaecological_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Gynaecological", cancer_before_acc_type
 )]
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_genitourinary_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_genitourinary_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Genitourinary", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_genitourinary_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Genitourinary", cancer_before_acc_type
 )]
 
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_headneck_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_headneck_vars, function(v) f1(get(v), 0))))  &
-                                    cancer_before_acc == "Cancer",
-                                  "Head & Neck", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_headneck_vars, function(v) f1(get(v), 0))))  &
+                                               cancer_before_acc == "Cancer",
+                                             "Head & Neck", cancer_before_acc_type
 )]
 
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_lung_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_lung_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Lung", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_lung_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Lung", cancer_before_acc_type
 )]
 
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_colorectal_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_colorectal_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Colorectal", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_colorectal_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Colorectal", cancer_before_acc_type
 )]
 
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_gastrointestinal_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_gastrointestinal_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Gastrointestinal Tract", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_gastrointestinal_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Gastrointestinal Tract", cancer_before_acc_type
 )]
 
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_breast_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_breast_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Breast", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_breast_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Breast", cancer_before_acc_type
 )]
 
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_prostate_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_prostate_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Prostate", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_prostate_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Prostate", cancer_before_acc_type
 )]
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_blood_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_blood_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Blood", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_blood_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Blood", cancer_before_acc_type
 )]
 
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_melanoma_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_melanoma_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Melanoma", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_melanoma_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Melanoma", cancer_before_acc_type
 )]
 
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_skin_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_skin_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Other Skin", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_skin_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Other Skin", cancer_before_acc_type
 )]
 
-d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_cns_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_cns_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Central Nervous System", cancer_before_acc_type
-)]
+# d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_cns_vars, function(v) f1(get(v), 1)))) &
+#                                                (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_cns_vars, function(v) f1(get(v), 0)))) &
+#                                                cancer_before_acc == "Cancer",
+#                                              "Central Nervous System", cancer_before_acc_type
+# )]
 
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_endocrine_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_endocrine_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Endocrine Gland", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_endocrine_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Endocrine Gland", cancer_before_acc_type
 )]
 
 d_acc_icd[, cancer_before_acc_type := ifelse((Reduce(`|`, lapply(icd_ii_other_vars, function(v) f1(get(v), 1)))) &
-                                    (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_other_vars, function(v) f1(get(v), 0)))) &
-                                    cancer_before_acc == "Cancer",
-                                  "Other Cancer", cancer_before_acc_type
+                                               (Reduce(`&`, lapply(icd_ii_subtype_vars %snin% icd_ii_other_vars, function(v) f1(get(v), 0)))) &
+                                               cancer_before_acc == "Cancer",
+                                             "Other Cancer", cancer_before_acc_type
 )]
 
 d_acc_icd[, cancer_before_acc_type := ifelse(icd_ii_type_n > 1 & cancer_before_acc == "Cancer", "Multiple Primary", cancer_before_acc_type)]
@@ -225,8 +225,8 @@ nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_headneck ==
 nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_lung == 1])
 nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_colorectal == 1])
 nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_gastrointestinal == 1])
-nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_breast == 1])
-nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_prostate == 1]) # 2
+nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_breast == 1]) # 2
+nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_prostate == 1])
 nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_blood == 1])
 nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_melanoma == 1])
 nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_skin == 1]) # 1
@@ -234,14 +234,11 @@ nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_endocrine =
 nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_other == 1])
 
 # exclude those had cancer after acc and other health conditions -------------------
-## first occurrence of cancer before acc
-d_acc_icd[, icd_ii_before_acc := ifelse(icd_ii_fo < acc_startdate, 1, 0)]
+d_cancer_acc <- d_acc_icd[!is.na(cancer_before_acc)]
 
-d_cancer_acc <- d_acc_icd[((icd_ii_before_acc == 1 & !is.na(cancer_before_acc_type)) | is.na(icd_ii_fo)) & !is.na(cancer_before_acc_type)]
-table(d_cancer_acc$cancer, useNA = "always")
 table(d_cancer_acc$cancer_before_acc, useNA = "always")
 table(d_cancer_acc$cancer_before_acc_type, useNA = "always")
-table(d_cancer_acc$cancer_time, useNA = "always")
+table(d_cancer_acc$cancer_time_since_diag, useNA = "always")
 
 saveRDS(d_cancer_acc, paste0(outputdir, "d_cancer_acc", ".RDS"))
 
@@ -260,34 +257,18 @@ clr_cancer_acc <- complr(data = d_cancer_acc,
                          sbp = sbp,
                          total = 1440)
 
-
-# stratified sleep
-quantile_sleep <- quantile(clr_cancer_acc$data$sleep, c (0, 0.25, 0.75, 1))
-
-clr_cancer_acc_sleep_q1 <- complr(data = d_cancer_acc[sleep <= quantile_sleep[[2]]],
-                                  transform = "ilr",
-                                  parts = c("sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp"),
-                                  sbp = sbp,
-                                  total = 1440)
-clr_cancer_acc_sleep_q23 <- complr(data = d_cancer_acc[sleep %gl% quantile_sleep[c(2:3)]],
-                                   transform = "ilr",
-                                   parts = c("sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp"),
-                                   sbp = sbp,
-                                   total = 1440)
-clr_cancer_acc_sleep_q4 <- complr(data = d_cancer_acc[sleep >= quantile_sleep[[3]]],
-                                  transform = "ilr",
-                                  parts = c("sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp"),
-                                  sbp = sbp,
-                                  total = 1440)
-
 # descriptives ----------------------------
-egltable(c("cancer_before_acc_type",
-           "sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp", #acomp and 0 imputed
-           "sleep", "mvpa", "lpa", "sb" # raw
-), strict = FALSE, data = d_acc_icd_ii)
+## demographics - group by cancer vs healthy
 
 
+## main variables - group by cancer vs healthy
 egltable(c(
   "sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp", #acomp and 0 imputed
   "sleep", "mvpa", "lpa", "sb" # raw
-), strict = FALSE, g = "icd_ii_subtype", data = d_acc_icd_ii)
+), strict = FALSE, g = "cancer_before_acc", data = d_cancer_acc)
+
+## main variables - group by cancer types
+egltable(c(
+  "sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp", #acomp and 0 imputed
+  "sleep", "mvpa", "lpa", "sb" # raw
+), strict = FALSE, g = "cancer_before_acc_type", data = d_cancer_acc)
