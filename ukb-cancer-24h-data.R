@@ -75,16 +75,26 @@ nrow(d_acc_icd[!is.na(icd_not_ii_sub_lo)])
 
 # time since first cancer diagnoses
 ## negative value means acc is before diagnosis
-d_acc_icd[, age_diff_cancer_acc := year(acc_startdate) - year(icd_ii_sub_fo)]
-table(d_acc_icd$age_diff_cancer_acc, useNA = "always")
+# d_acc_icd[, age_diff_cancer_acc := year(acc_startdate) - year(icd_ii_sub_fo)]
+d_acc_icd[, age_diff_cancer_acc := (acc_startdate - icd_ii_sub_fo)/365.25]
+# table(d_acc_icd$age_diff_cancer_acc, useNA = "always")
+table(round(d_acc_icd$age_diff_cancer_acc), useNA = "always")
 
 # time since most recent other diagnoses
-d_acc_icd[, age_diff_other_cond_acc := year(acc_startdate) - year(icd_not_ii_sub_fo)]
-table(d_acc_icd$age_diff_other_cond_acc, useNA = "always")
+# d_acc_icd[, age_diff_other_cond_acc := year(acc_startdate) - year(icd_not_ii_sub_fo)]
+d_acc_icd[, age_diff_other_cond_acc := (acc_startdate - icd_not_ii_sub_fo)/365.25]
+table(round(d_acc_icd$age_diff_other_cond_acc), useNA = "always")
+# table(round(as.integer(as.Date("2015-03-02") - as.Date("1938-03-16"))/365.25))
+
+# as.integer(as.Date("2015-03-02") - as.Date("1938-03-16"))/365.25
+# table(round(as.integer(as.Date("2015-03-02") - as.Date("1938-03-16"))/365.25))
 
 # censor 1 years to exclude from healthy
-d_acc_icd[age_diff_cancer_acc %in% c(-1, 0), age_diff_cancer_acc := NA]
-d_acc_icd[age_diff_other_cond_acc %in% c(-1, 0), age_diff_other_cond_acc := NA]
+d_acc_icd[age_diff_cancer_acc %gele% c(-1, 0), age_diff_cancer_acc := NA]
+d_acc_icd[age_diff_other_cond_acc %gele% c(-1, 0), age_diff_cancer_acc := NA]
+
+# d_acc_icd[between(age_diff_cancer_acc, -1, 0, incbounds = TRUE), age_diff_cancer_acc := NA]
+# d_acc_icd[between(age_diff_other_cond_acc, -1, 0, incbounds = TRUE), age_diff_cancer_acc := NA]
 
 # add the ones that always healthy to healthy (0)
 d_acc_icd[, age_diff_cancer_acc := ifelse(health_condition == "Healthy", 0, age_diff_cancer_acc)]
