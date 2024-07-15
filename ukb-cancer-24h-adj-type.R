@@ -43,6 +43,7 @@ pred_cancer_type_adj <- lapply(pred_cancer_type_adj, function(d) {
              sleep_constrast, mvpa_constrast, lpa_constrast, sb_constrast
   )]
   d <- unique(d)
+  d
 })
 
 # assemble back to summarise posteriors

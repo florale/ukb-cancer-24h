@@ -65,7 +65,8 @@ pred_cancer_time_since_diag_adj <- lapply(pred_cancer_time_since_diag_adj, funct
              sb_lessthan1_vs_1to5, sb_lessthan1_vs_morethan5, sb_1to5_vs_morethan5
              
   )]
-  d1 <- unique(d)
+  d <- unique(d)
+  d
 })
 
 # assemble back to summarise posteriors
