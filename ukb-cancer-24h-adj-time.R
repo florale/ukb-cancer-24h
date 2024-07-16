@@ -3,13 +3,13 @@ source(paste0(redir, "ukb_utils.R"))
 # source("ukb-cancer-24h-data.R")
 
 # main model --------
-# fit_cancer_time_since_diag_adj <- brmcoda(clr_cancer_acc,
-#                                           mvbind(ilr1, ilr2, ilr3) ~ cancer_time_since_diag +
-#                                             s(age) + sex + white + working + edu + never_smoked + current_drinker + deprivation,
-#                                           # save_pars = save_pars(all = TRUE),
-#                                           warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
-# )
-# saveRDS(fit_cancer_time_since_diag_adj, paste0(outputdir, "fit_cancer_time_since_diag_adj", ".RDS"))
+fit_cancer_time_since_diag_adj <- brmcoda(clr_cancer_acc,
+                                          mvbind(ilr1, ilr2, ilr3) ~ cancer_time_since_diag +
+                                            s(age) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation),
+                                          # save_pars = save_pars(all = TRUE),
+                                          warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
+)
+saveRDS(fit_cancer_time_since_diag_adj, paste0(outputdir, "fit_cancer_time_since_diag_adj", ".RDS"))
 
 # estimates ------------
 fit_cancer_time_since_diag_adj <- readRDS(paste0(outputdir, "fit_cancer_time_since_diag_adj", ".RDS"))
