@@ -14,7 +14,7 @@ d_acc_icd <- readRDS(paste0(inputdir, "d_acc_icd", ".RDS"))
 icd_not_cancer_any_vars <- c(
   "icd_i_any", "icd_ix_any", "icd_v_any",
   "icd_vii_any", "icd_viii_any", "icd_i_iii_any",
-  "icd_xi_any", "icd_xiv_any", "icd_iv_xiii_any", "icd_vi_any",
+  "icd_xi_any", "icd_xiv_any", "icd_iv_any", "icd_xiii_any", "icd_vi_any",
   "icd_x_any"
 )
 icd_ii_fo_vars <- grep("icd_ii_.*_fo", names(d_acc_icd), value = TRUE)
@@ -30,16 +30,21 @@ icd_ii_blood_vars <- c("icd_ii_lymphoid")
 icd_ii_melanoma_vars <- c("icd_ii_c43")
 icd_ii_skin_vars <- c("icd_ii_c44")
 icd_ii_endocrine_vars <- c("icd_ii_c73_c75")
-icd_ii_other_vars <- c("icd_ii_c30_c39", "icd_ii_c40_c41", "icd_ii_other", "icd_ii_c45", "icd_ii_c69_c72")
+icd_ii_other_vars <- c("icd_ii_c30_c39", "icd_ii_c40_c41", "icd_ii_various", "icd_ii_c45", "icd_ii_c69_c72")
 icd_ii_subtype_vars <- c(
   "icd_ii_c53", "icd_ii_c56", "icd_ii_c62", "icd_ii_c01_c14", "icd_ii_c15", 
   "icd_ii_c16", "icd_ii_c17", "icd_ii_c18_c21", "icd_ii_c22", "icd_ii_c23_c24", 
   "icd_ii_c25", "icd_ii_c26", "icd_ii_c31_c33", "icd_ii_c34", "icd_ii_c30_c39", 
-  "icd_ii_c40_c41", "icd_ii_c44", "icd_ii_c45", "icd_ii_other", "icd_ii_c50", 
+  "icd_ii_c40_c41", "icd_ii_c43", "icd_ii_c44", "icd_ii_c45", "icd_ii_various", "icd_ii_c50", 
   "icd_ii_c54_c55", "icd_ii_c61", "icd_ii_c64", "icd_ii_c65_c66", "icd_ii_c67", 
   "icd_ii_c68", "icd_ii_c69_c72", "icd_ii_c73_c75", "icd_ii_lymphoid" 
 )
-# icd_ii_cns_vars <- c("icd_ii_c69_c72")
+icd_any_vars <- c(
+  "icd_i_any", "icd_ii_any", "icd_ix_any", "icd_v_any",
+  "icd_vii_any", "icd_viii_any", "icd_i_iii_any",
+  "icd_xi_any", "icd_xiv_any", "icd_iv_any", "icd_xiii_any", "icd_vi_any",
+  "icd_x_any"
+)
 
 # cancer data management  ---------------
 # notes for Flora: 13 cancer composite related to PA
@@ -47,9 +52,13 @@ icd_ii_subtype_vars <- c(
 d_acc_icd[, icd_not_cancer := ifelse((Reduce(`|`, lapply(icd_not_cancer_any_vars, function(v) f1(get(v), 1)))),
                                      1, 0)]
 
+d_acc_icd[, icd_any := ifelse((Reduce(`|`, lapply(icd_any_vars, function(v) f1(get(v), 1)))),
+                              1, 0)]
+
 table(d_acc_icd$icd_not_cancer, useNA = "always")
 table(d_acc_icd$icd_ii_any, useNA = "always")
 table(d_acc_icd$icd_ii_group, useNA = "always")
+table(d_acc_icd$icd_any, useNA = "always")
 
 d_acc_icd[, icd_ii_comorbid := NA]
 d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 0, "Only cancer", icd_ii_comorbid)]
@@ -86,30 +95,40 @@ d_acc_icd[, age_diff_other_cond_acc := (acc_startdate - icd_not_ii_sub_fo)/365.2
 table(round(d_acc_icd$age_diff_other_cond_acc), useNA = "always")
 # table(round(as.integer(as.Date("2015-03-02") - as.Date("1938-03-16"))/365.25))
 
+# time since most recent any diagnoses
+d_acc_icd[, time_diff_acc_icd_any := (acc_startdate - icd_sub_fo)/365.25]
+d_acc_icd[time_diff_acc_icd_any %gele% c(-1, 0), time_diff_acc_icd_any := NA]
+d_acc_icd[, time_diff_acc_icd_any := ifelse(icd_any == 0 | time_diff_acc_icd_any < - 1, 0, time_diff_acc_icd_any)]
+
 # as.integer(as.Date("2015-03-02") - as.Date("1938-03-16"))/365.25
 # table(round(as.integer(as.Date("2015-03-02") - as.Date("1938-03-16"))/365.25))
 
-# censor 1 years to exclude from healthy
+# censor 1 years to exclude from healthy - set to NA to exclude in time since diagnoses
+# d_acc_icd <- d_acc_icd[age_diff_cancer_acc %gele% c(-1, 0) | age_diff_other_cond_acc %gele% c(-1, 0)]
+
 d_acc_icd[age_diff_cancer_acc %gele% c(-1, 0), age_diff_cancer_acc := NA]
-d_acc_icd[age_diff_other_cond_acc %gele% c(-1, 0), age_diff_cancer_acc := NA]
+d_acc_icd[age_diff_other_cond_acc %gele% c(-1, 0), age_diff_other_cond_acc := NA]
 
 # d_acc_icd[between(age_diff_cancer_acc, -1, 0, incbounds = TRUE), age_diff_cancer_acc := NA]
 # d_acc_icd[between(age_diff_other_cond_acc, -1, 0, incbounds = TRUE), age_diff_cancer_acc := NA]
 
-# add the ones that always healthy to healthy (0)
-d_acc_icd[, age_diff_cancer_acc := ifelse(health_condition == "Healthy", 0, age_diff_cancer_acc)]
+# add cancer diag after 1y and always healthy  to healthy
+d_acc_icd[, age_diff_cancer_acc := ifelse(age_diff_cancer_acc < -1 | icd_any == 0, 0, age_diff_cancer_acc)]
 
-# add first other health conds after 1y since acc to healthy (0)
-d_acc_icd[, age_diff_cancer_acc := ifelse(age_diff_other_cond_acc < -1 & health_condition == "Only other conditions", 0, age_diff_cancer_acc)]
+# add and any conds after 1y since acc to healthy (0)
+d_acc_icd[, age_diff_cancer_acc := ifelse(time_diff_acc_icd_any == 0 & (age_diff_cancer_acc == 0 | is.na(age_diff_cancer_acc)), 0, age_diff_cancer_acc)]
 
-# add first cancer diagnosis after 1y of acc to healthy
-d_acc_icd[, age_diff_cancer_acc := ifelse(age_diff_cancer_acc < -1 & health_condition == "Cancer", 0, age_diff_cancer_acc)]
+# remove the ones with health diag up to 1y after acc from healthy
+d_acc_icd[, age_diff_cancer_acc := ifelse(age_diff_other_cond_acc > - 1 & age_diff_cancer_acc == 0 & icd_not_cancer == 1, NA, age_diff_cancer_acc)]
 
-table(d_acc_icd$age_diff_cancer_acc, useNA = "always")
+table(round(d_acc_icd$age_diff_cancer_acc), useNA = "always")
+nrow(d_acc_icd[age_diff_cancer_acc == 0])
+
+# subset -------------
+d_acc_icd <- d_acc_icd[!is.na(age_diff_cancer_acc)]
 
 # main cancer predictor variables ----------------
-# time since cancer diagnosis
-# d_acc_icd[, age_at_cancer := year(icd_ii_fo) - year_birth]
+# time since cancer diagnosis - healthy should be 22599
 d_acc_icd[, cancer_time_since_diag := cut(age_diff_cancer_acc,
                                           breaks = c(-Inf, 0, 1, 5, Inf),
                                           labels = c("Healthy",
@@ -249,6 +268,7 @@ d_cancer_acc <- d_acc_icd[!is.na(cancer_before_acc)]
 table(d_cancer_acc$cancer_before_acc, useNA = "always")
 table(d_cancer_acc$cancer_before_acc_type, useNA = "always")
 table(d_cancer_acc$cancer_time_since_diag, useNA = "always")
+table(round(d_cancer_acc$age_diff_cancer_acc), useNA = "always")
 
 saveRDS(d_cancer_acc, paste0(outputdir, "d_cancer_acc", ".RDS"))
 
