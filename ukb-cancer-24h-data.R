@@ -1,13 +1,12 @@
 # olivia's
 # d_acc_icd <- readRDS("~/Desktop/GitHub/ukb-cancer-24h/d_acc_icd.RDS")
-# source("/Users/oliviadelia/Desktop/GitHub/ukbiobank/ukb_utils.R")
-# source("/Users/oliviadelia/Desktop/GitHub/ukb-cancer-24h/ukb-cancer-24h-data.R")
+source("/Users/oliviadelia/Desktop/GitHub/ukbiobank/ukb_utils.R")
+source("ukb-cancer-24h-utils.R")
+d_acc_icd <- readRDS(paste0("d_acc_icd", ".RDS"))
 
 # flora's
 source("ukb-cancer-24h-utils.R")
 source(paste0(redir, "ukb_utils.R"))
-
-# source(paste0(redir, "data/data_acc_icd.R"))
 d_acc_icd <- readRDS(paste0(inputdir, "d_acc_icd", ".RDS"))
 
 # var names --------------
@@ -95,6 +94,27 @@ d_acc_icd[, age_diff_other_cond_acc := (acc_startdate - icd_not_ii_sub_fo)/365.2
 table(round(d_acc_icd$age_diff_other_cond_acc), useNA = "always")
 # table(round(as.integer(as.Date("2015-03-02") - as.Date("1938-03-16"))/365.25))
 
+# number of cancer diags after acc
+nrow(d_acc_icd[((acc_startdate - icd_ii_sub_fo)/365.25) <= 0])
+
+# number of cancer diags within 1y
+nrow(d_acc_icd[((acc_startdate - icd_ii_sub_fo)/365.25) %gele% c(-1, 0)])
+
+nrow(d_acc_icd[((acc_startdate - icd_ii_sub_fo)/365.25) < -1])
+
+# number of other diags 1y after acc
+nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) < -1])
+
+# number of other diags before acc
+nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) >= 0])
+
+# number of other diags within 1y
+nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) %gele% c(-1, 0)])
+
+# number of other diags up to 1y after acc
+nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) >= -1])
+
+
 # time since most recent any diagnoses
 d_acc_icd[, time_diff_acc_icd_any := (acc_startdate - icd_sub_fo)/365.25]
 d_acc_icd[time_diff_acc_icd_any %gele% c(-1, 0), time_diff_acc_icd_any := NA]
@@ -123,6 +143,7 @@ d_acc_icd[, age_diff_cancer_acc := ifelse(age_diff_other_cond_acc > - 1 & age_di
 
 table(round(d_acc_icd$age_diff_cancer_acc), useNA = "always")
 nrow(d_acc_icd[age_diff_cancer_acc == 0])
+
 
 # subset -------------
 d_acc_icd <- d_acc_icd[!is.na(age_diff_cancer_acc)]
@@ -270,10 +291,10 @@ table(d_cancer_acc$cancer_before_acc_type, useNA = "always")
 table(d_cancer_acc$cancer_time_since_diag, useNA = "always")
 table(round(d_cancer_acc$age_diff_cancer_acc), useNA = "always")
 
-saveRDS(d_cancer_acc, paste0(outputdir, "d_cancer_acc", ".RDS"))
+# saveRDS(d_cancer_acc, paste0(outputdir, "d_cancer_acc", ".RDS"))
 
 # Composition and ilr ----------------------
-d_cancer_acc <- readRDS(paste0(outputdir, "d_cancer_acc", ".RDS"))
+# d_cancer_acc <- readRDS(paste0(outputdir, "d_cancer_acc", ".RDS"))
 d_cancer_acc <- d_cancer_acc[, -grep("ilr", names(d_cancer_acc), value = TRUE), with = FALSE]
 
 sbp <- matrix(c(
@@ -289,7 +310,11 @@ clr_cancer_acc <- complr(data = d_cancer_acc,
 
 # descriptives ----------------------------
 ## demographics - group by cancer vs healthy
-
+egltable(c(
+  "age", "sex", "ethnicg", "bmig", "edu", "working", 
+  "smoking", "alcohol", "deprivation"
+  ),
+  strict = FALSE, g = "cancer_before_acc", data = d_cancer_acc)
 
 ## main variables - group by cancer vs healthy
 egltable(c(
@@ -302,3 +327,6 @@ egltable(c(
   "sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp", #acomp and 0 imputed
   "sleep", "mvpa", "lpa", "sb" # raw
 ), strict = FALSE, g = "cancer_before_acc_type", data = d_cancer_acc)
+
+egltable(c("icd_ii_subtype"), strict = FALSE, data = d_cancer_acc)
+
