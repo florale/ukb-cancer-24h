@@ -124,8 +124,6 @@ pal_time_quantile <- c("#666666", "#4682b4", "#f5c98e", "#9c6755",
 # )
 
 # pal_jco()(10)
-scales::show_col(dutchmasters::dutchmasters_pal("milkmaid")(15))
-
 scales::show_col(tvthemes:::brooklyn99_palette$Dark)
 
 scales::show_col(tvthemes:::hilda_palette$Day)
