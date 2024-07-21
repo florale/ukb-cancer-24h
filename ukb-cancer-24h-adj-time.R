@@ -5,7 +5,7 @@ source(paste0(redir, "ukb_utils.R"))
 # main model --------
 fit_cancer_time_since_diag_adj <- brmcoda(clr_cancer_acc,
                                           mvbind(ilr1, ilr2, ilr3) ~ cancer_time_since_diag +
-                                            s(age) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation),
+                                            s(age_at_acc) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation),
                                           # save_pars = save_pars(all = TRUE),
                                           warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
 )

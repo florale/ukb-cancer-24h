@@ -6,7 +6,7 @@ source("ukb-cancer-24h-data.R")
 fit_cancer_type_adj <- brmcoda(clr_cancer_acc,
                                mvbind(ilr1, ilr2, ilr3) ~ cancer_before_acc_type +
                                  s(age_diff_cancer_acc) +
-                                 s(age) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation),
+                                 s(age_at_acc) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation),
                                # save_pars = save_pars(all = TRUE),
                                warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
 )

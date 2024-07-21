@@ -1,8 +1,8 @@
 # olivia's
 # d_acc_icd <- readRDS("~/Desktop/GitHub/ukb-cancer-24h/d_acc_icd.RDS")
-source("/Users/oliviadelia/Desktop/GitHub/ukbiobank/ukb_utils.R")
-source("ukb-cancer-24h-utils.R")
-d_acc_icd <- readRDS(paste0("d_acc_icd", ".RDS"))
+# source("/Users/oliviadelia/Desktop/GitHub/ukbiobank/ukb_utils.R")
+# source("ukb-cancer-24h-utils.R")
+# d_acc_icd <- readRDS(paste0("d_acc_icd", ".RDS"))
 
 # flora's
 source("ukb-cancer-24h-utils.R")
@@ -291,7 +291,7 @@ table(d_cancer_acc$cancer_before_acc_type, useNA = "always")
 table(d_cancer_acc$cancer_time_since_diag, useNA = "always")
 table(round(d_cancer_acc$age_diff_cancer_acc), useNA = "always")
 
-# saveRDS(d_cancer_acc, paste0(outputdir, "d_cancer_acc", ".RDS"))
+d_cancer_acc[, age_at_acc := year(acc_startdate) - year_birth]
 
 # Composition and ilr ----------------------
 # d_cancer_acc <- readRDS(paste0(outputdir, "d_cancer_acc", ".RDS"))
