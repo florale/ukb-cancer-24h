@@ -39,3 +39,5 @@ vignettes/*.pdf
 
 .RDataTmp
 d_acc_icd.RDS
+
+ukb-cancer-24h.Rproj

@@ -177,57 +177,73 @@ comp_cancer_time_since_diag_adj[, sig_ref_cancer := ifelse(nonsig_vs_cancer == F
 #                                                "More than 5 years since diagnosis"))]
 
 # healthy in first row of plot
-comp_cancer_time_since_diag_adj[, cancer_time_since_diag := ifelse(cancer_time_since_diag == "More than 5 years since diagnosis", "More than 5 years since Cancer diagnosis", cancer_time_since_diag)]
-comp_cancer_time_since_diag_adj[, cancer_time_since_diag := ifelse(cancer_time_since_diag == "1-5 years since diagnosis", "1-5 years since Cancer diagnosis", cancer_time_since_diag)]
-comp_cancer_time_since_diag_adj[, cancer_time_since_diag := ifelse(cancer_time_since_diag == "Less than 1 year since diagnosis", "Less than 1 year since Cancer diagnosis", cancer_time_since_diag)]
+comp_cancer_time_since_diag_adj[, cancer_time_since_diag := ifelse(cancer_time_since_diag == "More than 5 years since diagnosis", " >5 years since Cancer diagnosis", cancer_time_since_diag)]
+comp_cancer_time_since_diag_adj[, cancer_time_since_diag := ifelse(cancer_time_since_diag == "1-5 years since diagnosis",         "1-5 years since Cancer diagnosis", cancer_time_since_diag)]
+comp_cancer_time_since_diag_adj[, cancer_time_since_diag := ifelse(cancer_time_since_diag == "Less than 1 year since diagnosis",  "  <1 year since Cancer diagnosis", cancer_time_since_diag)]
+comp_cancer_time_since_diag_adj[, cancer_time_since_diag := ifelse(cancer_time_since_diag == "Healthy",                           "                                  Healthy", cancer_time_since_diag)]
 
 comp_cancer_time_since_diag_adj[, cancer_time_since_diag := factor(cancer_time_since_diag, ordered = TRUE,
                                                                    levels = c(
-                                                                     "More than 5 years since Cancer diagnosis",
+                                                                     " >5 years since Cancer diagnosis",
                                                                      "1-5 years since Cancer diagnosis",
-                                                                     "Less than 1 year since Cancer diagnosis",
-                                                                     "Healthy"))]
+                                                                     "  <1 year since Cancer diagnosis",
+                                                                     "                                  Healthy"))]
 
 comp_cancer_time_since_diag_adj[, yintercept := NA]
-comp_cancer_time_since_diag_adj[, yintercept := ifelse(part == "sleep", comp_cancer_time_since_diag_adj[cancer_time_since_diag == "Healthy" & part == "sleep"]$Mean, yintercept)]
-comp_cancer_time_since_diag_adj[, yintercept := ifelse(part == "mvpa", comp_cancer_time_since_diag_adj[cancer_time_since_diag == "Healthy" & part == "mvpa"]$Mean, yintercept)]
-comp_cancer_time_since_diag_adj[, yintercept := ifelse(part == "lpa", comp_cancer_time_since_diag_adj[cancer_time_since_diag == "Healthy" & part == "lpa"]$Mean, yintercept)]
-comp_cancer_time_since_diag_adj[, yintercept := ifelse(part == "sb", comp_cancer_time_since_diag_adj[cancer_time_since_diag == "Healthy" & part == "sb"]$Mean, yintercept)]
+comp_cancer_time_since_diag_adj[, yintercept := ifelse(part == "sleep", comp_cancer_time_since_diag_adj[cancer_time_since_diag == "                                  Healthy" & part == "sleep"]$Mean, yintercept)]
+comp_cancer_time_since_diag_adj[, yintercept := ifelse(part == "mvpa", comp_cancer_time_since_diag_adj[cancer_time_since_diag == "                                  Healthy" & part == "mvpa"]$Mean, yintercept)]
+comp_cancer_time_since_diag_adj[, yintercept := ifelse(part == "lpa", comp_cancer_time_since_diag_adj[cancer_time_since_diag == "                                  Healthy" & part == "lpa"]$Mean, yintercept)]
+comp_cancer_time_since_diag_adj[, yintercept := ifelse(part == "sb", comp_cancer_time_since_diag_adj[cancer_time_since_diag == "                                  Healthy" & part == "sb"]$Mean, yintercept)]
 
 comp_cancer_time_since_diag_adj[, part := ifelse(part == "sleep", "Sleep", part)]
 comp_cancer_time_since_diag_adj[, part := ifelse(part == "mvpa", "Moderate-to-vigorous physical activity", part)]
 comp_cancer_time_since_diag_adj[, part := ifelse(part == "lpa", "Light physical activity", part)]
 comp_cancer_time_since_diag_adj[, part := ifelse(part == "sb", "Sedentary behaviour", part)]
 
-comp_cancer_time_since_diag_adj[, text_position := max(CI_high), by = part]
+comp_cancer_time_since_diag_adj[, sig_position := min(CI_low), by = part]
+comp_cancer_time_since_diag_adj[, est_position := max(CI_high), by = part]
 
+comp_cancer_time_since_diag_adj[, estimates := paste0(round(Mean, 2), " [", round(CI_low, 2), ", ", round(CI_high, 2), "]")]
+comp_cancer_time_since_diag_adj[, est_sig := paste0(estimates, " ", str_replace_na(sig_ref_healthy, ""), str_replace_na(sig_ref_cancer, ""))]
+
+# plots -----------------------------
+## facet all -----------------------
 (plot_comp_cancer_time_since_diag_adj <- 
-    ggplot(comp_cancer_time_since_diag_adj, aes(x = cancer_time_since_diag, y = Mean, group = part)) +
-    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
-    geom_pointrange(aes(ymin = CI_low,
-                        ymax = CI_high, colour = cancer_time_since_diag), size = 0.75, linewidth = 0.75) +
-    geom_text(aes(y = text_position + 3, label = sig_ref_healthy, colour = cancer_time_since_diag), 
-              size = 6, nudge_x = 0.2, 
-              show.legend = FALSE) +
-    geom_text(aes(y = text_position + 4, label = sig_ref_cancer, colour = cancer_time_since_diag), 
-              size = 4, nudge_x = 0.2,
-              show.legend = FALSE) +
-    facet_wrap(~part, scales = "free") +
-    scale_colour_manual(values = pal_time) +
-    # scale_colour_jco() +
-    labs(x = "", y = "", colour = "") +
-    coord_flip() +
-    theme_ipsum() +
-    theme(
-      axis.ticks          = element_blank(),
-      panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
-      plot.background     = element_rect(fill = "transparent", colour = NA),
-      panel.grid.major.x  = element_blank(),
-      panel.grid.minor    = element_blank(),
-      strip.text          = element_text(size = 13, hjust = .5, face = "bold"),
-      legend.text         = element_text(size = 14, face = "bold", hjust = .5),
-      legend.position     = "none"
-    )
+   ggplot(comp_cancer_time_since_diag_adj, aes(x = cancer_time_since_diag, y = Mean, group = part)) +
+   geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+   geom_pointrange(aes(ymin = CI_low,
+                       ymax = CI_high, colour = cancer_time_since_diag), size = 0.75, linewidth = 0.75) +
+   geom_text(aes(y = est_position + 1, label = sig_ref_healthy, colour = cancer_time_since_diag), 
+             size = 6, nudge_x = 0, 
+             show.legend = FALSE) +
+   geom_text(aes(y = est_position + 2, label = sig_ref_cancer, colour = cancer_time_since_diag), 
+             size = 4, nudge_x = 0,
+             show.legend = FALSE) +
+   geom_text(aes(y = est_position + 6, label = estimates),
+             vjust = "outward", nudge_x = 0, family = "Arial Narrow", size = 4,
+             show.legend = FALSE) +
+   geom_text(aes(y = sig_position - 6, label = cancer_time_since_diag),
+             vjust = "outward", nudge_x = 0, family = "Arial Narrow", size = 4,
+             show.legend = FALSE) +
+   facet_wrap(~part, scales = "free") +
+   scale_colour_manual(values = pal_time) +
+   # scale_colour_jco() +
+   labs(x = "", y = "", colour = "") +
+   coord_flip() +
+   theme_ipsum() +
+   theme(
+     axis.ticks          = element_blank(),
+     panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+     plot.background     = element_rect(fill = "transparent", colour = NA),
+     panel.grid.major    = element_blank(),
+     panel.grid.minor    = element_blank(),
+     axis.text.x         = element_text(size = 13),
+     axis.text.y         = element_blank(),
+     strip.text          = element_text(size = 13, hjust = .5, face = "bold"),
+     legend.text         = element_text(size = 14, face = "bold", hjust = .5),
+     legend.position     = "none",
+     plot.margin       = unit(c(0,2,0,2), "lines"),
+   )
 )
 
 grDevices::cairo_pdf(
@@ -237,4 +253,193 @@ grDevices::cairo_pdf(
 )
 plot_comp_cancer_time_since_diag_adj
 dev.off()
+
+## plot by behaviour -----------------------
+(plot_comp_cancer_time_since_diag_sleep <- 
+   ggplot(comp_cancer_time_since_diag_adj[part == "Sleep"], aes(x = cancer_time_since_diag, y = Mean)) +
+   geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+   geom_pointrange(aes(ymin = CI_low,
+                       ymax = CI_high, colour = cancer_time_since_diag), size = 0.75, linewidth = 0.75) +
+   # geom_text(aes(y = 600 - 8, label = sig_ref_healthy, colour = cancer_time_since_diag), 
+   #           size = 6, nudge_x = 0, 
+   #           show.legend = FALSE) +
+   # geom_text(aes(y = 600 - 7, label = sig_ref_cancer, colour = cancer_time_since_diag), 
+   #           size = 4, nudge_x = 0,
+   #           show.legend = FALSE) +
+   geom_text(aes(y = 600 - 3, label = est_sig),
+             vjust = "outward", nudge_x = 0, 
+             family = "Arial Narrow", size = 4,
+             show.legend = FALSE) +
+   geom_text(aes(y = 500 + 5, label = cancer_time_since_diag),
+             vjust = "outward", nudge_x = 0, 
+             family = "Arial Narrow", size = 4,
+             show.legend = FALSE) +
+   # facet_wrap(~part, scales = "free", nrow = 4) +
+   scale_y_continuous(limits = c(500, 600),
+                      breaks = c(525, 550, 575),
+                      name = "Sleep") +
+   scale_colour_manual(values = pal_time) +
+   
+   labs(x = "", y = "", colour = "") +
+   coord_flip() +
+   theme_ipsum() +
+   theme(
+     axis.ticks          = element_blank(),
+     # panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+     plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
+     panel.grid.major    = element_blank(),
+     panel.grid.minor    = element_blank(),
+     axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+     axis.title.x        = element_text(size = 14, face = "bold", hjust = .5),
+     axis.text.x         = element_text(size = 13),
+     axis.text.y         = element_blank(),
+     strip.text          = element_text(size = 13, hjust = .5, face = "bold"),
+     legend.text         = element_text(size = 14, face = "bold", hjust = .5),
+     legend.position     = "none",
+     plot.margin         = unit(c(1,1,0,0), "lines")
+   )
+)
+
+(plot_comp_cancer_time_since_diag_mvpa <- 
+    ggplot(comp_cancer_time_since_diag_adj[part == "Moderate-to-vigorous physical activity"], aes(x = cancer_time_since_diag, y = Mean)) +
+    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+    geom_pointrange(aes(ymin = CI_low,
+                        ymax = CI_high, colour = cancer_time_since_diag), size = 0.75, linewidth = 0.75) +
+    # geom_text(aes(y = 35 - 1.5, label = sig_ref_healthy, colour = cancer_time_since_diag), 
+    #           size = 6, nudge_x = 0, 
+    #           show.legend = FALSE) +
+    # geom_text(aes(y = 35 - 1.25, label = sig_ref_cancer, colour = cancer_time_since_diag), 
+    #           size = 4, nudge_x = 0,
+    #           show.legend = FALSE) +
+    geom_text(aes(y = 35 - 0.5, label = est_sig),
+              vjust = "outward", nudge_x = 0, 
+              family = "Arial Narrow", size = 4,
+              show.legend = FALSE) +
+    geom_text(aes(y = 15 + 1, label = cancer_time_since_diag),
+              vjust = "outward", nudge_x = 0, 
+              family = "Arial Narrow", size = 4,
+              show.legend = FALSE) +
+    # facet_wrap(~part, scales = "free", nrow = 4) +
+    scale_y_continuous(limits = c(15, 35),
+                       breaks = c(20, 25, 30),
+                       name = "Moderate-to-vigorous physical activity") +
+    scale_colour_manual(values = pal_time) +
+    
+    labs(x = "", y = "", colour = "") +
+    coord_flip() +
+    theme_ipsum() +
+    theme(
+      axis.ticks          = element_blank(),
+      # panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+      plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
+      panel.grid.major    = element_blank(),
+      panel.grid.minor    = element_blank(),
+      axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+      axis.title.x        = element_text(size = 14, face = "bold", hjust = .5),
+      axis.text.x         = element_text(size = 13),
+      axis.text.y         = element_blank(),
+      strip.text          = element_text(size = 13, hjust = .5, face = "bold"),
+      legend.text         = element_text(size = 14, face = "bold", hjust = .5),
+      legend.position     = "none",
+      plot.margin         = unit(c(1,1,0,0), "lines")
+    )
+)
+
+(plot_comp_cancer_time_since_diag_lpa <- 
+    ggplot(comp_cancer_time_since_diag_adj[part == "Light physical activity"], aes(x = cancer_time_since_diag, y = Mean)) +
+    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+    geom_pointrange(aes(ymin = CI_low,
+                        ymax = CI_high, colour = cancer_time_since_diag), size = 0.75, linewidth = 0.75) +
+    # geom_text(aes(y = 350 - 8, label = sig_ref_healthy, colour = cancer_time_since_diag), 
+    #           size = 6, nudge_x = 0, 
+    #           show.legend = FALSE) +
+    # geom_text(aes(y = 350 - 7, label = sig_ref_cancer, colour = cancer_time_since_diag), 
+    #           size = 4, nudge_x = 0,
+    #           show.legend = FALSE) +
+    geom_text(aes(y = 350 - 3, label = est_sig),
+              vjust = "outward", nudge_x = 0, 
+              family = "Arial Narrow", size = 4,
+              show.legend = FALSE) +
+    geom_text(aes(y = 250 + 5, label = cancer_time_since_diag),
+              vjust = "outward", nudge_x = 0, 
+              family = "Arial Narrow", size = 4,
+              show.legend = FALSE) +
+    # facet_wrap(~part, scales = "free", nrow = 4) +
+    scale_y_continuous(limits = c(250, 350),
+                       breaks = c(275, 300, 325),
+                       name = "Light physical activity") +
+    scale_colour_manual(values = pal_time) +
+    
+    labs(x = "", y = "", colour = "") +
+    coord_flip() +
+    theme_ipsum() +
+    theme(
+      axis.ticks          = element_blank(),
+      # panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+      plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
+      panel.grid.major    = element_blank(),
+      panel.grid.minor    = element_blank(),
+      axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+      axis.title.x        = element_text(size = 14, face = "bold", hjust = .5),
+      axis.text.x         = element_text(size = 13),
+      axis.text.y         = element_blank(),
+      strip.text          = element_text(size = 13, hjust = .5, face = "bold"),
+      legend.text         = element_text(size = 14, face = "bold", hjust = .5),
+      legend.position     = "none",
+      plot.margin         = unit(c(1,1,0,0), "lines")
+    )
+)
+
+(plot_comp_cancer_time_since_diag_sb <- 
+    ggplot(comp_cancer_time_since_diag_adj[part == "Sedentary behaviour"], aes(x = cancer_time_since_diag, y = Mean)) +
+    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+    geom_pointrange(aes(ymin = CI_low,
+                        ymax = CI_high, colour = cancer_time_since_diag), size = 0.75, linewidth = 0.75) +
+    # geom_text(aes(y = 600 - 8, label = sig_ref_healthy, colour = cancer_time_since_diag), 
+    #           size = 6, nudge_x = 0, 
+    #           show.legend = FALSE) +
+    # geom_text(aes(y = 600 - 7, label = sig_ref_cancer, colour = cancer_time_since_diag), 
+    #           size = 4, nudge_x = 0,
+    #           show.legend = FALSE) +
+    geom_text(aes(y = 625 - 3, label = est_sig),
+              vjust = "outward", nudge_x = 0, 
+              family = "Arial Narrow", size = 4,
+              show.legend = FALSE) +
+    geom_text(aes(y = 525 + 5, label = cancer_time_since_diag),
+              vjust = "outward", nudge_x = 0, 
+              family = "Arial Narrow", size = 4,
+              show.legend = FALSE) +
+    # facet_wrap(~part, scales = "free", nrow = 4) +
+    scale_y_continuous(limits = c(525, 625),
+                       breaks = c(550, 575, 600),
+                       name = "Sedentary behaviour") +
+    scale_colour_manual(values = pal_time) +
+    
+    labs(x = "", y = "", colour = "") +
+    coord_flip() +
+    theme_ipsum() +
+    theme(
+      axis.ticks          = element_blank(),
+      # panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+      plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
+      panel.grid.major    = element_blank(),
+      panel.grid.minor    = element_blank(),
+      axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+      axis.title.x        = element_text(size = 14, face = "bold", hjust = .5),
+      axis.text.x         = element_text(size = 13),
+      axis.text.y         = element_blank(),
+      strip.text          = element_text(size = 13, hjust = .5, face = "bold"),
+      legend.text         = element_text(size = 14, face = "bold", hjust = .5),
+      legend.position     = "none",
+      plot.margin         = unit(c(1,1,0,0), "lines")
+    )
+)
+
+ggarrange(plot_comp_cancer_time_since_diag_sleep,
+          plot_comp_cancer_time_since_diag_mvpa,
+          plot_comp_cancer_time_since_diag_lpa,
+          plot_comp_cancer_time_since_diag_sb,
+          nrow = 4
+)
+plot_comp_cancer_time_since_diag_sleep / plot_comp_cancer_time_since_diag_mvpa / plot_comp_cancer_time_since_diag_lpa / plot_comp_cancer_time_since_diag_sb
 
