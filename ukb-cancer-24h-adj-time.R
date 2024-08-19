@@ -441,3 +441,49 @@ ggarrange(
 )
 dev.off()
 
+# olivia's thesis -----------
+(plot_comp_cancer_time_since_diag_adj <- 
+   ggplot(comp_cancer_time_since_diag_adj, aes(x = cancer_time_since_diag, y = Mean, group = part)) +
+   geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+   geom_pointrange(aes(ymin = CI_low,
+                       ymax = CI_high, colour = cancer_time_since_diag), size = 0.75, linewidth = 0.75) +
+   geom_text(aes(y = est_position + 1, label = sig_ref_healthy, colour = cancer_time_since_diag),
+             size = 6, nudge_x = 0,
+             show.legend = FALSE) +
+   geom_text(aes(y = est_position + 2, label = sig_ref_cancer, colour = cancer_time_since_diag),
+             size = 4, nudge_x = 0,
+             show.legend = FALSE) +
+   # geom_text(aes(y = est_position + 6, label = estimates),
+   #           vjust = "outward", nudge_x = 0, family = "Arial Narrow", size = 4,
+   #           show.legend = FALSE) +
+   # geom_text(aes(y = sig_position - 6, label = cancer_time_since_diag),
+   #           vjust = "outward", nudge_x = 0, family = "Arial Narrow", size = 4,
+   #           show.legend = FALSE) +
+   facet_wrap(~part, scales = "free", nrow = 4) +
+   scale_colour_manual(values = pal_time) +
+   # scale_colour_jco() +
+   labs(x = "", y = "", colour = "") +
+   coord_flip() +
+   theme_ipsum() +
+   theme(
+     axis.ticks          = element_blank(),
+     panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+     plot.background     = element_rect(fill = "transparent", colour = NA),
+     panel.grid.major    = element_blank(),
+     panel.grid.minor    = element_blank(),
+     axis.text.x         = element_text(size = 13),
+     # axis.text.y         = element_blank(),
+     strip.text          = element_text(size = 13, hjust = .5, face = "bold"),
+     legend.text         = element_text(size = 14, face = "bold", hjust = .5),
+     legend.position     = "none",
+     plot.margin       = unit(c(0,2,0,2), "lines"),
+   )
+)
+
+grDevices::cairo_pdf(
+  file = paste0(outputdir, "cancer_time_since_diag_adj", ".pdf"),
+  width = 8,
+  height = 12,
+)
+plot_comp_cancer_time_since_diag_adj
+dev.off()

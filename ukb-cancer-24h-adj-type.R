@@ -381,3 +381,198 @@ ggarrange(
 )
 dev.off()
 
+# olivia's thesis -----------
+# plot separate behaviours ------------
+(plot_comp_cancer_type_sleep <- 
+   ggplot(comp_cancer_type_adj[part == "Sleep Period"], aes(x = cancer_before_acc_type, y = Mean)) +
+   geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
+   geom_pointrange(aes(ymin = CI_low,
+                       ymax = CI_high, colour = cancer_before_acc_type)) +
+   geom_text(aes(y = text_position + 8, label = Sig, colour = cancer_before_acc_type), 
+             size = 5.5, 
+             # position = position_dodge2(width = 1),
+             show.legend = FALSE) +
+   # facet_wrap(~part, scales = "free") +
+   scale_colour_manual(values = pal_type) +
+   labs(x = "", title = "Sleep Period", colour = "") +
+   coord_flip() +      
+   theme_ipsum() +
+   theme(
+     axis.ticks          = element_blank(),
+     panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+     plot.background     = element_rect(fill = "transparent", colour = NA),
+     panel.grid.major.x  = element_blank(),
+     panel.grid.minor    = element_blank(),
+     # strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
+     axis.title.x        = element_blank(),
+     plot.title          = element_text(size = 12, hjust = .5, face = "bold"),
+     legend.position     = "none"
+   )
+)
+
+grDevices::cairo_pdf(
+  file = paste0(outputdir, "cancer_type_adj_sleep", ".pdf"),
+  width = 6,
+  height = 5,
+)
+plot_comp_cancer_type_sleep
+dev.off()
+
+(plot_comp_cancer_type_mvpa <- 
+    ggplot(comp_cancer_type_adj[part == "Moderate-to-vigorous physical activity"], aes(x = cancer_before_acc_type, y = Mean)) +
+    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
+    geom_pointrange(aes(ymin = CI_low,
+                        ymax = CI_high, colour = cancer_before_acc_type)) +
+    geom_text(aes(y = text_position + 8, label = Sig, colour = cancer_before_acc_type), 
+              size = 5.5, 
+              # position = position_dodge2(width = 1),
+              show.legend = FALSE) +
+    # facet_wrap(~part, scales = "free") +
+    scale_colour_manual(values = pal_type) +
+    labs(x = "", title = "Moderate-to-vigorous physical activity", colour = "") +
+    coord_flip() +      
+    theme_ipsum() +
+    theme(
+      axis.ticks          = element_blank(),
+      panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+      plot.background     = element_rect(fill = "transparent", colour = NA),
+      panel.grid.major.x  = element_blank(),
+      panel.grid.minor    = element_blank(),
+      # strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
+      axis.title.x        = element_blank(),
+      plot.title          = element_text(size = 12, hjust = .5, face = "bold"),
+      legend.position     = "none"
+    )
+)
+
+grDevices::cairo_pdf(
+  file = paste0(outputdir, "cancer_type_adj_mvpa", ".pdf"),
+  width = 6,
+  height = 5,
+)
+plot_comp_cancer_type_mvpa
+dev.off()
+
+(plot_comp_cancer_type_lpa <- 
+    ggplot(comp_cancer_type_adj[part == "Light physical activity"], aes(x = cancer_before_acc_type, y = Mean)) +
+    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
+    geom_pointrange(aes(ymin = CI_low,
+                        ymax = CI_high, colour = cancer_before_acc_type)) +
+    geom_text(aes(y = text_position + 8, label = Sig, colour = cancer_before_acc_type), 
+              size = 5.5, 
+              # position = position_dodge2(width = 1),
+              show.legend = FALSE) +
+    # facet_wrap(~part, scales = "free") +
+    scale_colour_manual(values = pal_type) +
+    labs(x = "", title = "Light physical activity", colour = "") +
+    coord_flip() +      
+    theme_ipsum() +
+    theme(
+      axis.ticks          = element_blank(),
+      panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+      plot.background     = element_rect(fill = "transparent", colour = NA),
+      panel.grid.major.x  = element_blank(),
+      panel.grid.minor    = element_blank(),
+      # strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
+      axis.title.x        = element_blank(),
+      plot.title          = element_text(size = 12, hjust = .5, face = "bold"),
+      legend.position     = "none"
+    )
+)
+
+grDevices::cairo_pdf(
+  file = paste0(outputdir, "cancer_type_adj_lpa", ".pdf"),
+  width = 6,
+  height = 5,
+)
+plot_comp_cancer_type_lpa
+dev.off()
+
+(plot_comp_cancer_type_sb <- 
+    ggplot(comp_cancer_type_adj[part == "Sedentary behaviour"], aes(x = cancer_before_acc_type, y = Mean)) +
+    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
+    geom_pointrange(aes(ymin = CI_low,
+                        ymax = CI_high, colour = cancer_before_acc_type)) +
+    geom_text(aes(y = text_position + 8, label = Sig, colour = cancer_before_acc_type), 
+              size = 5.5, 
+              # position = position_dodge2(width = 1),
+              show.legend = FALSE) +
+    # facet_wrap(~part, scales = "free") +
+    scale_colour_manual(values = pal_type) +
+    labs(x = "", title = "Sedentary behaviour", colour = "") +
+    coord_flip() +      
+    theme_ipsum() +
+    theme(
+      axis.ticks          = element_blank(),
+      panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+      plot.background     = element_rect(fill = "transparent", colour = NA),
+      panel.grid.major.x  = element_blank(),
+      panel.grid.minor    = element_blank(),
+      # strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
+      axis.title.x        = element_blank(),
+      plot.title          = element_text(size = 12, hjust = .5, face = "bold"),
+      legend.position     = "none"
+    )
+)
+
+grDevices::cairo_pdf(
+  file = paste0(outputdir, "cancer_type_adj_sb", ".pdf"),
+  width = 6,
+  height = 5,
+)
+plot_comp_cancer_type_sb
+dev.off()
+
+# scatter plot lpa and sb --------
+wided <- reshape(comp_cancer_type_adj, direction = "wide", idvar = "cancer_before_acc_type", timevar = "part")
+names(wided)
+
+wided[, cancer_before_acc_type := factor(cancer_before_acc_type, ordered = TRUE,
+                                         levels = c(
+                                           "Multiple Primary",
+                                           "Lung",
+                                           "Gastrointestinal Tract",
+                                           "Blood",
+                                           "Head & Neck",
+                                           "Colorectal",
+                                           "Gynaecological",
+                                           "Other Cancer",
+                                           "Genitourinary",
+                                           "Endocrine Gland",
+                                           "Breast",
+                                           "Melanoma",
+                                           "Prostate",
+                                           "Other Skin",
+                                           "Healthy"
+                                         ))]
+
+(lpa_sb_cor <- ggplot(wided, aes(x = `Mean.Light physical activity`, y = `Mean.Sedentary behaviour`, colour = cancer_before_acc_type)) +
+    geom_point(size = 3) +
+    geom_text(aes(x = `Mean.Light physical activity` + 1, label = cancer_before_acc_type, colour = cancer_before_acc_type),
+              size = 3
+              # position = position_dodge2(width = 3, preserve = "single", reverse = TRUE)
+    ) +
+    scale_colour_manual(values = pal_type) +
+    labs(x = "Sedentary Behaviour", y = "Light Physical Activity", colour = "") +
+    coord_flip() +
+    theme_ipsum() +
+    theme(
+      axis.ticks          = element_blank(),
+      panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+      plot.background     = element_rect(fill = "transparent", colour = NA),
+      axis.title.x        = element_text(size = 13, hjust = .5, face = "bold"),
+      axis.title.y        = element_text(size = 13, hjust = .5, face = "bold"),
+      panel.grid.major    = element_blank(),
+      panel.grid.minor    = element_blank(),
+      legend.position     = "none"
+    )
+)
+
+grDevices::cairo_pdf(
+  file = paste0(outputdir, "cancer_type_adj_lpa_sb", ".pdf"),
+  width = 9,
+  height = 10,
+)
+lpa_sb_cor
+dev.off()
+
