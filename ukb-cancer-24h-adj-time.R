@@ -251,21 +251,16 @@ dev.off()
    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
    geom_pointrange(aes(ymin = CI_low,
                        ymax = CI_high, colour = cancer_time_since_diag), size = 0.5, linewidth = 0.75) +
-   # geom_text(aes(y = 600 - 8, label = sig_ref_healthy, colour = cancer_time_since_diag), 
-   #           size = 6, nudge_x = 0, 
-   #           show.legend = FALSE) +
-   # geom_text(aes(y = 600 - 7, label = sig_ref_cancer, colour = cancer_time_since_diag), 
-   #           size = 4, nudge_x = 0,
-   #           show.legend = FALSE) +
    geom_text(aes(y = 625, label = est_sig),
-             vjust = "outward", hjust = 1, nudge_x = 0, 
+             hjust = 1, nudge_x = 0, 
              family = "Arial Narrow", size = 4,
              show.legend = FALSE) +
    geom_text(aes(y = 475, label = cancer_time_since_diag),
-             vjust = "outward", hjust = 0, nudge_x = 0, 
+             hjust = 0, nudge_x = 0, 
              family = "Arial Narrow", size = 4,
              show.legend = FALSE) +
-   # facet_wrap(~part, scales = "free", nrow = 4) +
+   geom_segment(aes(x = 0, yend = 525), col = "black", linewidth = 0.5) +
+   geom_segment(aes(x = 0, yend = 575), col = "black", linewidth = 0.5) +   
    scale_y_continuous(limits = c(475, 625),
                       breaks = c(525, 550, 575),
                       name = "Sleep") +
@@ -280,7 +275,7 @@ dev.off()
      plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
      panel.grid.major    = element_blank(),
      panel.grid.minor    = element_blank(),
-     axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+     # axis.line.x         = element_line(linewidth = 0.5, colour = "black"),
      axis.title.x        = element_text(size = 13, face = "bold", hjust = .5),
      axis.text.x         = element_text(size = 12),
      axis.text.y         = element_blank(),
@@ -296,26 +291,20 @@ dev.off()
     geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_time_since_diag), size = 0.5, linewidth = 0.75) +
-    # geom_text(aes(y = 35 - 1.5, label = sig_ref_healthy, colour = cancer_time_since_diag), 
-    #           size = 6, nudge_x = 0, 
-    #           show.legend = FALSE) +
-    # geom_text(aes(y = 35 - 1.25, label = sig_ref_cancer, colour = cancer_time_since_diag), 
-    #           size = 4, nudge_x = 0,
-    #           show.legend = FALSE) +
     geom_text(aes(y = 40, label = est_sig),
-              vjust = "outward", hjust = 1, nudge_x = 0, 
+              hjust = 1, nudge_x = 0, 
               family = "Arial Narrow", size = 4,
               show.legend = FALSE) +
     geom_text(aes(y = 10, label = cancer_time_since_diag),
-              vjust = "outward", hjust = 0, nudge_x = 0, 
+              hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 4,
               show.legend = FALSE) +
-    # facet_wrap(~part, scales = "free", nrow = 4) +
+    geom_segment(aes(x = 0, yend = 20), col = "black", linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = 30), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(10, 40),
                        breaks = c(20, 25, 30),
                        name = "Moderate-to-vigorous physical activity") +
     scale_colour_manual(values = pal_time) +
-    
     labs(x = "", y = "", colour = "") +
     coord_flip() +
     theme_ipsum() +
@@ -325,7 +314,7 @@ dev.off()
       plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
       panel.grid.major    = element_blank(),
       panel.grid.minor    = element_blank(),
-      axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+      # axis.line.x         = element_line(linewidth = 0.5, colour = "black"),
       axis.title.x        = element_text(size = 13, face = "bold", hjust = .5),
       axis.text.x         = element_text(size = 12),
       axis.text.y         = element_blank(),
@@ -341,26 +330,20 @@ dev.off()
     geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_time_since_diag), size = 0.5, linewidth = 0.75) +
-    # geom_text(aes(y = 350 - 8, label = sig_ref_healthy, colour = cancer_time_since_diag), 
-    #           size = 6, nudge_x = 0, 
-    #           show.legend = FALSE) +
-    # geom_text(aes(y = 350 - 7, label = sig_ref_cancer, colour = cancer_time_since_diag), 
-    #           size = 4, nudge_x = 0,
-    #           show.legend = FALSE) +
     geom_text(aes(y = 375, label = est_sig),
-              vjust = "outward", hjust = 1, nudge_x = 0, 
+              hjust = 1, nudge_x = 0, 
               family = "Arial Narrow", size = 4,
               show.legend = FALSE) +
     geom_text(aes(y = 225, label = cancer_time_since_diag),
-              vjust = "outward", hjust = 0, nudge_x = 0, 
+              hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 4,
               show.legend = FALSE) +
-    # facet_wrap(~part, scales = "free", nrow = 4) +
+    geom_segment(aes(x = 0, yend = 275), col = "black", linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = 325), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(225, 375),
                        breaks = c(275, 300, 325),
                        name = "Light physical activity") +
     scale_colour_manual(values = pal_time) +
-    
     labs(x = "", y = "", colour = "") +
     coord_flip() +
     theme_ipsum() +
@@ -370,7 +353,7 @@ dev.off()
       plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
       panel.grid.major    = element_blank(),
       panel.grid.minor    = element_blank(),
-      axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+      # axis.line.x         = element_line(linewidth = 0.5, colour = "black"),
       axis.title.x        = element_text(size = 13, face = "bold", hjust = .5),
       axis.text.x         = element_text(size = 12),
       axis.text.y         = element_blank(),
@@ -386,26 +369,20 @@ dev.off()
     geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_time_since_diag), size = 0.5, linewidth = 0.75) +
-    # geom_text(aes(y = 600 - 8, label = sig_ref_healthy, colour = cancer_time_since_diag), 
-    #           size = 6, nudge_x = 0, 
-    #           show.legend = FALSE) +
-    # geom_text(aes(y = 600 - 7, label = sig_ref_cancer, colour = cancer_time_since_diag), 
-    #           size = 4, nudge_x = 0,
-    #           show.legend = FALSE) +
     geom_text(aes(y = 650, label = est_sig),
-              vjust = "outward", hjust = 1, nudge_x = 0, 
+              hjust = 1, nudge_x = 0, 
               family = "Arial Narrow", size = 4,
               show.legend = FALSE) +
     geom_text(aes(y = 500, label = cancer_time_since_diag),
-              vjust = "outward", hjust = 0, nudge_x = 0, 
+              hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 4,
               show.legend = FALSE) +
-    # facet_wrap(~part, scales = "free", nrow = 4) +
+    geom_segment(aes(x = 0, yend = 600), col = "black", linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = 550), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(500, 650),
                        breaks = c(550, 575, 600),
                        name = "Sedentary behaviour") +
     scale_colour_manual(values = pal_time) +
-    
     labs(x = "", y = "", colour = "") +
     coord_flip() +
     theme_ipsum() +
@@ -415,7 +392,7 @@ dev.off()
       plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
       panel.grid.major    = element_blank(),
       panel.grid.minor    = element_blank(),
-      axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+      # axis.line.x         = element_line(linewidth = 0.5, colour = "black"),
       axis.title.x        = element_text(size = 13, face = "bold", hjust = .5),
       axis.text.x         = element_text(size = 12),
       axis.text.y         = element_blank(),
@@ -429,7 +406,7 @@ dev.off()
 grDevices::cairo_pdf(
   file = paste0(outputdir, "cancer_time_since_diag_est", ".pdf"),
   width = 7,
-  height = 11,
+  height = 10,
 )
 
 ggarrange(

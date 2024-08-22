@@ -147,28 +147,28 @@ comp_cancer_type_adj[, est_sig := paste0(estimates, " ", str_replace_na(Sig, "")
 # plots -----------------------------
 ## facet all -----------------------
 (plot_comp_cancer_type_adj <- 
-    ggplot(comp_cancer_type_adj, aes(x = cancer_before_acc_type, y = Mean, group = part)) +
-    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
-    geom_pointrange(aes(ymin = CI_low,
-                        ymax = CI_high, colour = cancer_before_acc_type)) +
-    geom_text(aes(y = sig_position + 8, label = Sig, colour = cancer_before_acc_type), 
-              size = 5.5, 
-              # position = position_dodge2(width = 1),
-              show.legend = FALSE) +
-    facet_wrap(~part, scales = "free") +
-    scale_colour_manual(values = pal_type) +
-    labs(x = "", y = "", colour = "") +
-    coord_flip() +      
-    theme_ipsum() +
-    theme(
-      axis.ticks          = element_blank(),
-      panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
-      plot.background     = element_rect(fill = "transparent", colour = NA),
-      panel.grid.major.x  = element_blank(),
-      panel.grid.minor    = element_blank(),
-      strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
-      legend.position     = "none"
-    )
+   ggplot(comp_cancer_type_adj, aes(x = cancer_before_acc_type, y = Mean, group = part)) +
+   geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
+   geom_pointrange(aes(ymin = CI_low,
+                       ymax = CI_high, colour = cancer_before_acc_type)) +
+   geom_text(aes(y = sig_position + 8, label = Sig, colour = cancer_before_acc_type), 
+             size = 5.5, 
+             # position = position_dodge2(width = 1),
+             show.legend = FALSE) +
+   facet_wrap(~part, scales = "free") +
+   scale_colour_manual(values = pal_type) +
+   labs(x = "", y = "", colour = "") +
+   coord_flip() +      
+   theme_ipsum() +
+   theme(
+     axis.ticks          = element_blank(),
+     panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+     plot.background     = element_rect(fill = "transparent", colour = NA),
+     panel.grid.major.x  = element_blank(),
+     panel.grid.minor    = element_blank(),
+     strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
+     legend.position     = "none"
+   )
 )
 
 grDevices::cairo_pdf(
@@ -182,70 +182,60 @@ dev.off()
 
 ## plot by behaviour -----------------------
 (plot_comp_cancer_type_mvpa <- 
-    ggplot(comp_cancer_type_adj[part == "Moderate-to-vigorous physical activity"], aes(x = cancer_before_acc_type, y = Mean)) +
-    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
-    geom_pointrange(aes(ymin = CI_low,
-                        ymax = CI_high, colour = cancer_before_acc_type), size = 0.5, linewidth = 0.75) +
-    # geom_text(aes(y = 35 - 1.5, label = sig_ref_healthy, colour = cancer_before_acc_type), 
-    #           size = 6, nudge_x = 0, 
-    #           show.legend = FALSE) +
-    # geom_text(aes(y = 35 - 1.25, label = sig_ref_cancer, colour = cancer_before_acc_type), 
-    #           size = 4, nudge_x = 0,
-    #           show.legend = FALSE) +
-    geom_text(aes(y = 40, label = est_sig),
-              vjust = "outward", hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 4,
-              show.legend = FALSE) +
-    geom_text(aes(y = 0, label = cancer_before_acc_type),
-              vjust = "outward", hjust = 0, nudge_x = 0, 
-              family = "Arial Narrow", size = 4,
-              show.legend = FALSE) +
-    # facet_wrap(~part, scales = "free", nrow = 4) +
-    scale_y_continuous(limits = c(0, 40),
-                       breaks = c(10, 20, 30),
-                       name = "Moderate-to-vigorous physical activity") +
-    scale_colour_manual(values = pal_type) +
-    
-    labs(x = "", y = "", colour = "") +
-    coord_flip() +
-    theme_ipsum() +
-    theme(
-      axis.ticks          = element_blank(),
-      # panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
-      plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
-      panel.grid.major    = element_blank(),
-      panel.grid.minor    = element_blank(),
-      axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
-      axis.title.x        = element_text(size = 13, face = "bold", hjust = .5),
-      axis.text.x         = element_text(size = 12),
-      axis.text.y         = element_blank(),
-      strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
-      legend.text         = element_text(size = 13, face = "bold", hjust = .5),
-      legend.position     = "none",
-      plot.margin         = unit(c(0.5,0,0.5,0), "lines")
-    )
+   ggplot(comp_cancer_type_adj[part == "Moderate-to-vigorous physical activity"], aes(x = cancer_before_acc_type, y = Mean)) +
+   geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+   geom_pointrange(aes(ymin = CI_low,
+                       ymax = CI_high, colour = cancer_before_acc_type), size = 0.25, linewidth = 0.5) +
+   geom_text(aes(y = 40, label = est_sig),
+             hjust = 1, nudge_x = 0, 
+             family = "Arial Narrow", size = 3,
+             show.legend = FALSE) +
+   geom_text(aes(y = 0, label = cancer_before_acc_type),
+             hjust = 0, nudge_x = 0, 
+             family = "Arial Narrow", size = 3,
+             show.legend = FALSE) +
+   geom_segment(aes(x = 0, yend = 10), col = "black", linewidth = 0.5) +
+   geom_segment(aes(x = 0, yend = 30), col = "black", linewidth = 0.5) +
+   scale_y_continuous(limits = c(0, 40),
+                      breaks = c(10, 20, 30),
+                      name = "Moderate-to-vigorous physical activity") +
+   scale_colour_manual(values = pal_type) +
+   
+   labs(x = "", y = "", colour = "") +
+   coord_flip() +
+   theme_ipsum() +
+   theme(
+     axis.ticks          = element_blank(),
+     # panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+     plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
+     panel.grid.major    = element_blank(),
+     panel.grid.minor    = element_blank(),
+     # axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+     axis.title.x        = element_text(size = 9, face = "bold", hjust = .5),
+     axis.text.x         = element_text(size = 8),
+     axis.text.y         = element_blank(),
+     strip.text          = element_text(size = 8, hjust = .5, face = "bold"),
+     legend.text         = element_text(size = 9, face = "bold", hjust = .5),
+     legend.position     = "none",
+     plot.margin         = unit(c(0.5,0,0.5,0), "lines")
+   )
 )
 
 (plot_comp_cancer_type_lpa <- 
     ggplot(comp_cancer_type_adj[part == "Light physical activity"], aes(x = cancer_before_acc_type, y = Mean)) +
     geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
     geom_pointrange(aes(ymin = CI_low,
-                        ymax = CI_high, colour = cancer_before_acc_type), size = 0.5, linewidth = 0.75) +
-    # geom_text(aes(y = 350 - 8, label = sig_ref_healthy, colour = cancer_before_acc_type), 
-    #           size = 6, nudge_x = 0, 
-    #           show.legend = FALSE) +
-    # geom_text(aes(y = 350 - 7, label = sig_ref_cancer, colour = cancer_before_acc_type), 
-    #           size = 4, nudge_x = 0,
-    #           show.legend = FALSE) +
+                        ymax = CI_high, colour = cancer_before_acc_type), size = 0.25, linewidth = 0.5) +
     geom_text(aes(y = 375, label = est_sig),
-              vjust = "outward", hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 4,
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
     geom_text(aes(y = 175, label = cancer_before_acc_type),
-              vjust = "outward", hjust = 0, nudge_x = 0, 
-              family = "Arial Narrow", size = 4,
+              hjust = 0, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    # facet_wrap(~part, scales = "free", nrow = 4) +
+    geom_segment(aes(x = 0, yend = 225), col = "black", linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = 325), col = "black", linewidth = 0.5) +    
     scale_y_continuous(limits = c(175, 375),
                        breaks = c(225, 275, 325),
                        name = "Light physical activity") +
@@ -260,14 +250,14 @@ dev.off()
       plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
       panel.grid.major    = element_blank(),
       panel.grid.minor    = element_blank(),
-      axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
-      axis.title.x        = element_text(size = 13, face = "bold", hjust = .5),
-      axis.text.x         = element_text(size = 12),
+      # axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+      axis.title.x        = element_text(size = 9, face = "bold", hjust = .5),
+      axis.text.x         = element_text(size = 8),
       axis.text.y         = element_blank(),
-      strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
-      legend.text         = element_text(size = 13, face = "bold", hjust = .5),
+      strip.text          = element_text(size = 8, hjust = .5, face = "bold"),
+      legend.text         = element_text(size = 9, face = "bold", hjust = .5),
       legend.position     = "none",
-      plot.margin         = unit(c(2,0,0,0), "lines")
+      plot.margin         = unit(c(0.5,0,0,0), "lines")
     )
 )
 
@@ -275,22 +265,17 @@ dev.off()
     ggplot(comp_cancer_type_adj[part == "Sedentary behaviour"], aes(x = cancer_before_acc_type, y = Mean)) +
     geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
     geom_pointrange(aes(ymin = CI_low,
-                        ymax = CI_high, colour = cancer_before_acc_type), size = 0.5, linewidth = 0.75) +
-    # geom_text(aes(y = 600 - 8, label = sig_ref_healthy, colour = cancer_before_acc_type), 
-    #           size = 6, nudge_x = 0, 
-    #           show.legend = FALSE) +
-    # geom_text(aes(y = 600 - 7, label = sig_ref_cancer, colour = cancer_before_acc_type), 
-    #           size = 4, nudge_x = 0,
-    #           show.legend = FALSE) +
+                        ymax = CI_high, colour = cancer_before_acc_type), size = 0.25, linewidth = 0.5) +
     geom_text(aes(y = 700, label = est_sig),
-              vjust = "outward", hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 4,
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
     geom_text(aes(y = 500, label = cancer_before_acc_type),
-              vjust = "outward", hjust = 0, nudge_x = 0, 
-              family = "Arial Narrow", size = 4,
+              hjust = 0, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    # facet_wrap(~part, scales = "free", nrow = 4) +
+    geom_segment(aes(x = 0, yend = 550), col = "black", linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = 650), col = "black", linewidth = 0.5) +    
     scale_y_continuous(limits = c(500, 700),
                        breaks = c(550, 600, 650),
                        name = "Sedentary behaviour") +
@@ -305,14 +290,14 @@ dev.off()
       plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
       panel.grid.major    = element_blank(),
       panel.grid.minor    = element_blank(),
-      axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
-      axis.title.x        = element_text(size = 13, face = "bold", hjust = .5),
-      axis.text.x         = element_text(size = 12),
+      # axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+      axis.title.x        = element_text(size = 9, face = "bold", hjust = .5),
+      axis.text.x         = element_text(size = 8),
       axis.text.y         = element_blank(),
-      strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
-      legend.text         = element_text(size = 13, face = "bold", hjust = .5),
+      strip.text          = element_text(size = 8, hjust = .5, face = "bold"),
+      legend.text         = element_text(size = 9, face = "bold", hjust = .5),
       legend.position     = "none",
-      plot.margin         = unit(c(2,0,0,0), "lines")
+      plot.margin         = unit(c(0.5,0,0,0), "lines")
     )
 )
 
@@ -321,16 +306,17 @@ dev.off()
     ggplot(comp_cancer_type_adj[part == "Sleep"], aes(x = cancer_before_acc_type, y = Mean)) +
     geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
     geom_pointrange(aes(ymin = CI_low,
-                        ymax = CI_high, colour = cancer_before_acc_type), size = 0.5, linewidth = 0.75) +
+                        ymax = CI_high, colour = cancer_before_acc_type), size = 0.25, linewidth = 0.5) +
     geom_text(aes(y = 600, label = est_sig),
-              vjust = "outward", hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 4,
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
     geom_text(aes(y = 500, label = cancer_before_acc_type),
-              vjust = "outward", hjust = 0, nudge_x = 0, 
-              family = "Arial Narrow", size = 4,
+              hjust = 0, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    # facet_wrap(~part, scales = "free", nrow = 4) +
+    geom_segment(aes(x = 0, yend = 525), col = "black", linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = 575), col = "black", linewidth = 0.5) +    
     scale_y_continuous(limits = c(500, 600),
                        breaks = c(525, 550, 575),
                        name = "Sleep") +
@@ -345,39 +331,62 @@ dev.off()
       plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
       panel.grid.major    = element_blank(),
       panel.grid.minor    = element_blank(),
-      axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
-      axis.title.x        = element_text(size = 13, face = "bold", hjust = .5),
-      axis.text.x         = element_text(size = 12),
+      # axis.line.x         = element_line(linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8"),
+      axis.title.x        = element_text(size = 9, face = "bold", hjust = .5),
+      axis.text.x         = element_text(size = 8),
       axis.text.y         = element_blank(),
-      strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
-      legend.text         = element_text(size = 13, face = "bold", hjust = .5),
+      strip.text          = element_text(size = 8, hjust = .5, face = "bold"),
+      legend.text         = element_text(size = 9, face = "bold", hjust = .5),
       legend.position     = "none",
-      plot.margin         = unit(c(0.5,0,0.5,0), "lines")
+      plot.margin         = unit(c(0.5,0,0,0), "lines")
     )
 )
 
 # save
+# grDevices::cairo_pdf(
+#   file = paste0(outputdir, "plot_comp_cancer_type_mvpa_est", ".pdf"),
+#   width = 6,
+#   height = 5,
+# )
+# plot_comp_cancer_type_mvpa
+# dev.off()
+# 
+# grDevices::cairo_pdf(
+#   file = paste0(outputdir, "plot_comp_cancer_type_lpa_est", ".pdf"),
+#   width = 6,
+#   height = 5,
+# )
+# plot_comp_cancer_type_lpa
+# dev.off()
+# 
+# grDevices::cairo_pdf(
+#   file = paste0(outputdir, "plot_comp_cancer_type_sb_est", ".pdf"),
+#   width = 6,
+#   height = 5,
+# )
+# plot_comp_cancer_type_sb
+# dev.off()
+# 
+# grDevices::cairo_pdf(
+#   file = paste0(outputdir, "plot_comp_cancer_type_sleep_est", ".pdf"),
+#   width = 6,
+#   height = 5,
+# )
+# plot_comp_cancer_type_sleep
+# dev.off()
+
 grDevices::cairo_pdf(
-  file = paste0(outputdir, "cancer_type_est_mvpa_lpa", ".pdf"),
-  width = 7,
-  height = 12,
+  file = paste0(outputdir, "cancer_type_est", ".pdf"),
+  width = 6,
+  height = 11,
 )
+
 ggarrange(
   plot_comp_cancer_type_mvpa,
   plot_comp_cancer_type_lpa,
-  nrow = 2
-)
-dev.off()
-
-grDevices::cairo_pdf(
-  file = paste0(outputdir, "cancer_type_est_sleep_sb", ".pdf"),
-  width = 7,
-  height = 12,
-)
-ggarrange(
-  plot_comp_cancer_type_sleep,
   plot_comp_cancer_type_sb,
-  nrow = 2
+  plot_comp_cancer_type_sleep,
+  nrow = 4
 )
 dev.off()
 
@@ -553,7 +562,7 @@ wided[, cancer_before_acc_type := factor(cancer_before_acc_type, ordered = TRUE,
               # position = position_dodge2(width = 3, preserve = "single", reverse = TRUE)
     ) +
     scale_colour_manual(values = pal_type) +
-    labs(x = "Sedentary Behaviour", y = "Light Physical Activity", colour = "") +
+    labs(x = "Light physical activity", y = "Sedentary behaviour", colour = "") +
     coord_flip() +
     theme_ipsum() +
     theme(
