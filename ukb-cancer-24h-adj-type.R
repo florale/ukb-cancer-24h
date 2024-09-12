@@ -397,7 +397,7 @@ dev.off()
    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
    geom_pointrange(aes(ymin = CI_low,
                        ymax = CI_high, colour = cancer_before_acc_type)) +
-   geom_text(aes(y = text_position + 8, label = Sig, colour = cancer_before_acc_type), 
+   geom_text(aes(y = sig_position + 8, label = Sig, colour = cancer_before_acc_type), 
              size = 5.5, 
              # position = position_dodge2(width = 1),
              show.legend = FALSE) +
@@ -432,7 +432,7 @@ dev.off()
     geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type)) +
-    geom_text(aes(y = text_position + 8, label = Sig, colour = cancer_before_acc_type), 
+    geom_text(aes(y = sig_position + 8, label = Sig, colour = cancer_before_acc_type), 
               size = 5.5, 
               # position = position_dodge2(width = 1),
               show.legend = FALSE) +
@@ -467,7 +467,7 @@ dev.off()
     geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type)) +
-    geom_text(aes(y = text_position + 8, label = Sig, colour = cancer_before_acc_type), 
+    geom_text(aes(y = sig_position + 8, label = Sig, colour = cancer_before_acc_type), 
               size = 5.5, 
               # position = position_dodge2(width = 1),
               show.legend = FALSE) +
@@ -502,7 +502,7 @@ dev.off()
     geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type)) +
-    geom_text(aes(y = text_position + 8, label = Sig, colour = cancer_before_acc_type), 
+    geom_text(aes(y = sig_position + 8, label = Sig, colour = cancer_before_acc_type), 
               size = 5.5, 
               # position = position_dodge2(width = 1),
               show.legend = FALSE) +

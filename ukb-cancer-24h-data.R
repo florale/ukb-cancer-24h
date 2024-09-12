@@ -311,7 +311,7 @@ clr_cancer_acc <- complr(data = d_cancer_acc,
 # descriptives ----------------------------
 ## demographics - group by cancer vs healthy
 egltable(c(
-  "age", "sex", "ethnicg", "bmig", "edu", "working", 
+  "age", "age_at_acc", "sex", "ethnicg", "bmig", "edu", "working", 
   "smoking", "alcohol", "deprivation"
   ),
   strict = FALSE, g = "cancer_before_acc", data = d_cancer_acc)
