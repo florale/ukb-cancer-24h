@@ -208,42 +208,42 @@ comp_cancer_time_since_diag_adj[, est_sig := paste0(estimates, " ", str_replace_
 
 # plots -----------------------------
 ## facet all -----------------------
-# (plot_comp_cancer_time_since_diag_adj <- 
-#    ggplot(comp_cancer_time_since_diag_adj, aes(x = cancer_time_since_diag, y = Mean, group = part)) +
-#    geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
-#    geom_pointrange(aes(ymin = CI_low,
-#                        ymax = CI_high, colour = cancer_time_since_diag), size = 0.75, linewidth = 0.75) +
-#    geom_text(aes(y = text_position + 3, label = sig_ref_healthy, colour = cancer_time_since_diag), 
-#              size = 6, nudge_x = 0.2, 
-#              show.legend = FALSE) +
-#    geom_text(aes(y = text_position + 4, label = sig_ref_cancer, colour = cancer_time_since_diag), 
-#              size = 4, nudge_x = 0.2,
-#              show.legend = FALSE) +
-#    facet_wrap(~part, scales = "free") +
-#    scale_colour_manual(values = pal_time) +
-#    # scale_colour_jco() +
-#    labs(x = "", y = "", colour = "") +
-#    coord_flip() +
-#    theme_ipsum() +
-#    theme(
-#      axis.ticks          = element_blank(),
-#      panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
-#      plot.background     = element_rect(fill = "transparent", colour = NA),
-#      panel.grid.major.x  = element_blank(),
-#      panel.grid.minor    = element_blank(),
-#      strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
-#      legend.text         = element_text(size = 13, face = "bold", hjust = .5),
-#      legend.position     = "none"
-#    )
-# )
-# 
-# grDevices::cairo_pdf(
-#   file = paste0(outputdir, "cancer_time_since_diag_adj", ".pdf"),
-#   width = 11.5,
-#   height = 8,
-# )
-# plot_comp_cancer_time_since_diag_adj
-# dev.off()
+(plot_comp_cancer_time_since_diag_adj <-
+   ggplot(comp_cancer_time_since_diag_adj, aes(x = cancer_time_since_diag, y = Mean, group = part)) +
+   geom_hline(aes(yintercept = yintercept), linewidth = 0.5, linetype = 2, colour = "#a8a8a8") +
+   geom_pointrange(aes(ymin = CI_low,
+                       ymax = CI_high, colour = cancer_time_since_diag), size = 0.75, linewidth = 0.75) +
+   geom_text(aes(y = sig_position + 3, label = sig_ref_healthy, colour = cancer_time_since_diag),
+             size = 6, nudge_x = 0.2,
+             show.legend = FALSE) +
+   geom_text(aes(y = sig_position + 4, label = sig_ref_cancer, colour = cancer_time_since_diag),
+             size = 4, nudge_x = 0.2,
+             show.legend = FALSE) +
+   facet_wrap(~part, scales = "free") +
+   scale_colour_manual(values = pal_time) +
+   # scale_colour_jco() +
+   labs(x = "", y = "", colour = "") +
+   coord_flip() +
+   theme_ipsum() +
+   theme(
+     axis.ticks          = element_blank(),
+     panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
+     plot.background     = element_rect(fill = "transparent", colour = NA),
+     panel.grid.major.x  = element_blank(),
+     panel.grid.minor    = element_blank(),
+     strip.text          = element_text(size = 12, hjust = .5, face = "bold"),
+     legend.text         = element_text(size = 13, face = "bold", hjust = .5),
+     legend.position     = "none"
+   )
+)
+
+grDevices::cairo_pdf(
+  file = paste0(outputdir, "cancer_time_since_diag_adj", ".pdf"),
+  width = 11.5,
+  height = 8,
+)
+plot_comp_cancer_time_since_diag_adj
+dev.off()
 
 ## plot by behaviour -----------------------
 (plot_comp_cancer_time_since_diag_sleep <- 
