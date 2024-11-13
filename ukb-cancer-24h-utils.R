@@ -5,8 +5,8 @@ outputdir <- "/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/proje
 # colour pallete
 c("#978787", "#BEACA2", "#EFE3E0", "#A1B2C2", "#8399AE")
 # pal_time <- c("#4682b4", "#9c6755", "#f5c98e", "#dfa398")
-pal_time <- c("#EAD3BF", "#B49797", "#708885", "#5A6367")
-pal <- c("#CEA299", "#708885")
+pal_time <- c("#EAD3BF", "#83A192", "#708885", "#5A6367", "#B49797")
+pal <- c("#EAD3BF", "#83A192", "#CEA299")
 
 # pal_type <- wes_palette("Cavalcanti1", 15, type = "continuous")
 # pal_type <- wes_palette("Zissou1", 15, type = "continuous")

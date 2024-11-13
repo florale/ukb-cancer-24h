@@ -59,27 +59,27 @@ table(d_acc_icd$icd_ii_any, useNA = "always")
 table(d_acc_icd$icd_ii_group, useNA = "always")
 table(d_acc_icd$icd_any, useNA = "always")
 
-d_acc_icd[, icd_ii_comorbid := NA]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 0, "Only cancer", icd_ii_comorbid)]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 1, "Cancer comorbid", icd_ii_comorbid)]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group == "No" & icd_not_cancer == 1, "Only other conditions", icd_ii_comorbid)]
-d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group == "No" & icd_not_cancer == 0, "Healthy", icd_ii_comorbid)]
-
-table(d_acc_icd$icd_ii_comorbid, useNA = "always")
-
-d_acc_icd[, health_condition := NA]
-d_acc_icd[, health_condition := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary"), "Cancer", health_condition)]
-d_acc_icd[, health_condition := ifelse(icd_ii_group == "No" & icd_not_cancer == 1, "Only other conditions", health_condition)]
-d_acc_icd[, health_condition := ifelse(icd_ii_group == "No" & icd_not_cancer == 0, "Healthy", health_condition)]
-
-d_acc_icd[, health_condition := as.factor(health_condition)]
-d_acc_icd[, health_condition := relevel(health_condition, ref = "Healthy")]
-
-table(d_acc_icd$health_condition, useNA = "always")
+# d_acc_icd[, icd_ii_comorbid := NA]
+# d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 0, "Only cancer", icd_ii_comorbid)]
+# d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary") & icd_not_cancer == 1, "Cancer comorbid", icd_ii_comorbid)]
+# d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group == "No" & icd_not_cancer == 1, "Only other conditions", icd_ii_comorbid)]
+# d_acc_icd[, icd_ii_comorbid := ifelse(icd_ii_group == "No" & icd_not_cancer == 0, "Healthy", icd_ii_comorbid)]
+# 
+# table(d_acc_icd$icd_ii_comorbid, useNA = "always")
+# 
+# d_acc_icd[, health_condition := NA]
+# d_acc_icd[, health_condition := ifelse(icd_ii_group %in% c("One Primary", "Multiple Primary"), "Cancer", health_condition)]
+# d_acc_icd[, health_condition := ifelse(icd_ii_group == "No" & icd_not_cancer == 1, "Only other conditions", health_condition)]
+# d_acc_icd[, health_condition := ifelse(icd_ii_group == "No" & icd_not_cancer == 0, "Healthy", health_condition)]
+# 
+# d_acc_icd[, health_condition := as.factor(health_condition)]
+# d_acc_icd[, health_condition := relevel(health_condition, ref = "Healthy")]
+# 
+# table(d_acc_icd$health_condition, useNA = "always")
 
 # censor 1 years to exclude from healthy --------
-nrow(d_acc_icd[!is.na(icd_ii_sub_lo)])
-nrow(d_acc_icd[!is.na(icd_not_ii_sub_lo)])
+nrow(d_acc_icd[!is.na(icd_ii_sub_fo)])
+nrow(d_acc_icd[!is.na(icd_not_ii_sub_fo)])
 
 # time since first cancer diagnoses
 ## negative value means acc is before diagnosis
@@ -92,6 +92,7 @@ table(round(d_acc_icd$age_diff_cancer_acc), useNA = "always")
 # d_acc_icd[, age_diff_other_cond_acc := year(acc_startdate) - year(icd_not_ii_sub_fo)]
 d_acc_icd[, age_diff_other_cond_acc := (acc_startdate - icd_not_ii_sub_fo)/365.25]
 table(round(d_acc_icd$age_diff_other_cond_acc), useNA = "always")
+
 # table(round(as.integer(as.Date("2015-03-02") - as.Date("1938-03-16"))/365.25))
 
 # number of cancer diags after acc
@@ -114,7 +115,6 @@ nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) %gele% c(-1, 0)])
 # number of other diags up to 1y after acc
 nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) >= -1])
 
-
 # time since most recent any diagnoses
 d_acc_icd[, time_diff_acc_icd_any := (acc_startdate - icd_sub_fo)/365.25]
 d_acc_icd[time_diff_acc_icd_any %gele% c(-1, 0), time_diff_acc_icd_any := NA]
@@ -132,10 +132,10 @@ d_acc_icd[age_diff_other_cond_acc %gele% c(-1, 0), age_diff_other_cond_acc := NA
 # d_acc_icd[between(age_diff_cancer_acc, -1, 0, incbounds = TRUE), age_diff_cancer_acc := NA]
 # d_acc_icd[between(age_diff_other_cond_acc, -1, 0, incbounds = TRUE), age_diff_cancer_acc := NA]
 
-# add cancer diag after 1y and always healthy  to healthy
+# add cancer diag after 1y and always healthy to healthy
 d_acc_icd[, age_diff_cancer_acc := ifelse(age_diff_cancer_acc < -1 | icd_any == 0, 0, age_diff_cancer_acc)]
 
-# add and any conds after 1y since acc to healthy (0)
+# add any conds after 1y since acc to healthy (0)
 d_acc_icd[, age_diff_cancer_acc := ifelse(time_diff_acc_icd_any == 0 & (age_diff_cancer_acc == 0 | is.na(age_diff_cancer_acc)), 0, age_diff_cancer_acc)]
 
 # remove the ones with health diag up to 1y after acc from healthy
@@ -144,12 +144,11 @@ d_acc_icd[, age_diff_cancer_acc := ifelse(age_diff_other_cond_acc > - 1 & age_di
 table(round(d_acc_icd$age_diff_cancer_acc), useNA = "always")
 nrow(d_acc_icd[age_diff_cancer_acc == 0])
 
-
 # subset -------------
-d_acc_icd <- d_acc_icd[!is.na(age_diff_cancer_acc)]
+# d_acc_icd <- d_acc_icd[!is.na(age_diff_cancer_acc)]
 
 # main cancer predictor variables ----------------
-# time since cancer diagnosis - healthy should be 22599
+# time since cancer diagnosis - healthy 15051
 d_acc_icd[, cancer_time_since_diag := cut(age_diff_cancer_acc,
                                           breaks = c(-Inf, 0, 1, 5, Inf),
                                           labels = c("Healthy",
@@ -160,12 +159,12 @@ d_acc_icd[, cancer_time_since_diag := as.factor(cancer_time_since_diag)]
 table(d_acc_icd$cancer_time_since_diag, useNA = "always")
 
 d_acc_icd[, cancer_time_since_diag_5g := cut(age_diff_cancer_acc, 
-                                  breaks = c(-Inf, 0, 1, 5, 10, Inf),
-                                  labels = c("Healthy",
-                                             "Less than 1 year since diagnosis",
-                                             "1-5 years since diagnosis", 
-                                             "5-10 years since diagnosis", 
-                                             "More than 10 years since diagnosis"))]
+                                             breaks = c(-Inf, 0, 1, 5, 10, Inf),
+                                             labels = c("Healthy",
+                                                        "Less than 1 year since diagnosis",
+                                                        "1-5 years since diagnosis", 
+                                                        "5-10 years since diagnosis", 
+                                                        "More than 10 years since diagnosis"))]
 d_acc_icd[, cancer_time_since_diag_5g := as.factor(cancer_time_since_diag_5g)]
 table(d_acc_icd$cancer_time_since_diag_5g, useNA = "always")
 
@@ -175,6 +174,33 @@ d_acc_icd[, cancer_before_acc := ifelse(cancer_time_since_diag == "Healthy", 0, 
 d_acc_icd[, cancer_before_acc := ifelse(cancer_time_since_diag != "Healthy", 1, cancer_before_acc)]
 d_acc_icd[, cancer_before_acc := factor(cancer_before_acc, levels = c(0, 1), labels = c("Healthy", "Cancer"))]
 table(d_acc_icd$cancer_before_acc, useNA = "always")
+
+# factor cancer vs healthy vs other conds
+d_acc_icd[, cancer_other_before_acc := NA]
+d_acc_icd[, cancer_other_before_acc := ifelse(cancer_before_acc == "Healthy", "Healthy", cancer_other_before_acc)]
+d_acc_icd[, cancer_other_before_acc := ifelse(cancer_before_acc == "Cancer",  "Cancer", cancer_other_before_acc)]
+d_acc_icd[, cancer_other_before_acc := ifelse(is.na(cancer_before_acc) & age_diff_other_cond_acc > - 1 ,  "Others", cancer_other_before_acc)]
+
+d_acc_icd[, cancer_other_before_acc := as.factor(cancer_other_before_acc)]
+table(d_acc_icd$cancer_other_before_acc, useNA = "always")
+
+# factor cancer vs healthy vs other conds
+d_acc_icd[, cancer_time_since_diag_other := NA]
+d_acc_icd[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag == "Healthy",  "Healthy", cancer_time_since_diag_other)]
+d_acc_icd[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag == "Less than 1 year since diagnosis",  "Less than 1 year since diagnosis", cancer_time_since_diag_other)]
+d_acc_icd[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag == "1-5 years since diagnosis",  "1-5 years since diagnosis", cancer_time_since_diag_other)]
+d_acc_icd[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag == "More than 5 years since diagnosis",  "More than 5 years since diagnosis", cancer_time_since_diag_other)]
+d_acc_icd[, cancer_time_since_diag_other := ifelse(cancer_other_before_acc == "Others",  "Others", cancer_time_since_diag_other)]
+
+d_acc_icd[, cancer_time_since_diag_other := factor(cancer_time_since_diag, ordered = TRUE,
+                                                   levels = c(
+                                                     "Healthy",
+                                                     "Others",
+                                                     "Less than 1 year since diagnosis",
+                                                     "1-5 years since diagnosis",
+                                                     "More than 5 years since diagnosis"
+                                                   ))]
+table(d_acc_icd$cancer_time_since_diag_other, useNA = "always")
 
 # type
 d_acc_icd[, cancer_before_acc_type := NA]
@@ -283,10 +309,15 @@ nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_skin == 1])
 nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_endocrine == 1])
 nrow(d_acc_icd[cancer_before_acc_type == 'Multiple Primary' & icd_ii_other == 1])
 
-# exclude those had cancer after acc and other health conditions -------------------
-d_cancer_acc <- d_acc_icd[!is.na(cancer_before_acc)]
+# other cond 
+d_acc_icd[, other_conds_at_acc := ifelse(cancer_before_acc == "Healthy", 0, icd_not_cancer)]
+table(d_acc_icd$other_conds_at_acc, useNA = "always")
+
+# exclude those had cancer after acc -------------------
+d_cancer_acc <- d_acc_icd[!is.na(cancer_other_before_acc)]
 
 table(d_cancer_acc$cancer_before_acc, useNA = "always")
+table(d_cancer_acc$cancer_other_before_acc, useNA = "always")
 table(d_cancer_acc$cancer_before_acc_type, useNA = "always")
 table(d_cancer_acc$cancer_time_since_diag, useNA = "always")
 table(round(d_cancer_acc$age_diff_cancer_acc), useNA = "always")
@@ -312,9 +343,9 @@ clr_cancer_acc <- complr(data = d_cancer_acc,
 ## demographics - group by cancer vs healthy
 egltable(c(
   "age", "age_at_acc", "sex", "ethnicg", "bmig", "edu", "working", 
-  "smoking", "alcohol", "deprivation"
-  ),
-  strict = FALSE, g = "cancer_before_acc", data = d_cancer_acc)
+  "smoking", "alcohol", "deprivation", "deprivationg", "other_conds_at_acc", "cancer_time_since_diag"
+),
+strict = FALSE, g = "cancer_before_acc", data = d_cancer_acc)
 
 ## main variables - group by cancer vs healthy
 egltable(c(
@@ -328,5 +359,5 @@ egltable(c(
   "sleep", "mvpa", "lpa", "sb" # raw
 ), strict = FALSE, g = "cancer_before_acc_type", data = d_cancer_acc)
 
-egltable(c("icd_ii_subtype"), strict = FALSE, data = d_cancer_acc)
+egltable(c("cancer_before_acc_type"), strict = FALSE, data = d_cancer_acc)
 
