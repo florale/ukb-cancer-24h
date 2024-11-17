@@ -5,19 +5,28 @@ outputdir <- "/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/proje
 # colour pallete
 c("#978787", "#BEACA2", "#EFE3E0", "#A1B2C2", "#8399AE")
 # pal_time <- c("#4682b4", "#9c6755", "#f5c98e", "#dfa398")
-pal_time <- c("#EAD3BF", "#83A192", "#708885", "#5A6367", "#B49797")
-pal <- c("#EAD3BF", "#83A192", "#CEA299")
+
 
 # pal_type <- wes_palette("Cavalcanti1", 15, type = "continuous")
 # pal_type <- wes_palette("Zissou1", 15, type = "continuous")
 # pal_type <- c("#666666", "#f6e0d2", "#9c6755", "#659794", "#dfa398", "#f5c98e", "#d65b5a", "#586085", 
 #               "#6ca9c3", "#d1a391", "#7b906f", "#c0a5aa", "#7083a4", "#ad616c", "#4d3944")
+pal <- c("#708885", "#EAD3BF", "#ba6c6e")
+pal_time <- c("#708885", "#EAD3BF", "#D2A7A7", "#B87474", "#4E2F26")
+pal_combined <- c("#708885", "#EAD3BF", "#4E2F26", "#ba6c6e", "#CA8F90", "#E4C7C7")
 
-pal_type <- c("#4E2F26",
-              "#944C4C", "#d65b5a", "#efcbcb", "#dfa398", "#9c6755", "#ea967c", "#f5c98e", 
-              # "#EAD3BF",
-              "#8DA290", "#4F7375", "#8CAACB", "#4682b4", "#3b3960", "#717497",
-              "#666666" 
+# pal_type <- c("#4E2F26",
+#               "#944C4C", "#d65b5a", "#efcbcb", "#dfa398", "#9c6755", "#ea967c", "#f5c98e", 
+#               "#EAD3BF",
+#               "#8DA290", "#4F7375", "#8CAACB", "#4682b4", "#3b3960", "#717497",
+#               "#666666" 
+# )
+
+
+pal_type <- c("#708885", "#EAD3BF", 
+              "#4E2F26","#944C4C", "#d65b5a", "#efcbcb", "#dfa398", "#9c6755",  "#ea967c", "#f5c98e", 
+              "#4F7375", "#8CAACB", "#4682b4", "#3b3960", "#9D93B9",
+              "#586085" 
 )
 
 # pal_type <- c("#1e2142",
