@@ -391,11 +391,10 @@ ggarrange(
 )
 dev.off()
 
-# CANCER TYPES VS HEALTHY VS OTHERS
-# main model --------
+# CANCER TYPES VS HEALTHY VS OTHERS main model --------
 fit_cancer_type_other_adj <- brmcoda(clr_cancer_acc,
                                mvbind(ilr1, ilr2, ilr3) ~ cancer_before_acc_type_other +
-                                 # s(age_diff_cancer_acc) +
+                                 # s(age_diff_lo_cancer_acc) +
                                  s(age_at_acc) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation),
                                # save_pars = save_pars(all = TRUE),
                                warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
@@ -414,13 +413,35 @@ pred_cancer_type_other_adj <- fitted(fit_cancer_type_other_adj, newdata = d_canc
 # summarise by cancer types
 pred_cancer_type_other_adj <- apply(pred_cancer_type_other_adj, c(1), function(x)  cbind(d_cancer_type_other_adj, x))
 pred_cancer_type_other_adj <- lapply(pred_cancer_type_other_adj, function(d) {
-  d <- as.data.table(d)
   
-  # estimated means by cancer types
-  d[, sleep := mean(V1), by = cancer_before_acc_type_other]
-  d[, mvpa  := mean(V2), by = cancer_before_acc_type_other]
-  d[, lpa   := mean(V3), by = cancer_before_acc_type_other]
-  d[, sb    := mean(V4), by = cancer_before_acc_type_other]
+  parts <- c("sleep", "mvpa", "lpa", "sb")
+  parts0 <- c("V1", "V2", "V3", "V4")
+  
+  d <- as.data.table(d)
+  d[, cancer_weight := sum(.wgt.), by = cancer_before_acc_type_other]
+  d[, denominator := sum(cancer_weight)]
+  d[, cancer_denominator := denominator - 
+      (d[cancer_before_acc_type_other == "Others"]$cancer_weight[[1]])*nrow(d[cancer_before_acc_type_other == "Others"]) - 
+      (d[cancer_before_acc_type_other == "Healthy"]$cancer_weight[[1]])*nrow(d[cancer_before_acc_type_other == "Healthy"])]
+
+  d[, (parts) := lapply(.SD, mean), by = cancer_before_acc_type_other, .SDcols =  parts0]
+  
+  d[, sleep_weighted := ifelse(cancer_before_acc_type_other %nin% c("Others", "Healthy"), sleep*(cancer_weight/cancer_denominator), NA)]
+  d[, mvpa_weighted := ifelse(cancer_before_acc_type_other %nin% c("Others", "Healthy"), mvpa*(cancer_weight/cancer_denominator), NA)]
+  d[, lpa_weighted := ifelse(cancer_before_acc_type_other %nin% c("Others", "Healthy"), lpa*(cancer_weight/cancer_denominator), NA)]
+  d[, sb_weighted := ifelse(cancer_before_acc_type_other %nin% c("Others", "Healthy"), sb*(cancer_weight/cancer_denominator), NA)]
+  
+  d[, (paste0(parts, "_cancer")) := lapply(.SD, sum, na.rm = TRUE), .SDcols = paste0(parts, "_weighted")]
+  
+  d <- rbind(d,
+             data.table(cancer_before_acc_type_other = "Cancer"),
+             fill = TRUE
+  )
+
+  d[cancer_before_acc_type_other == "Cancer", sleep := d$sleep_cancer[[1]]]
+  d[cancer_before_acc_type_other == "Cancer", mvpa := d$mvpa_cancer[[1]]]
+  d[cancer_before_acc_type_other == "Cancer", lpa := d$lpa_cancer[[1]]]
+  d[cancer_before_acc_type_other == "Cancer", sb := d$sb_cancer[[1]]]
   
   # constrast cancer types vs healthy
   d[, sleep_vs_healthy := sleep - d[cancer_before_acc_type_other == "Healthy"]$sleep[1]]
@@ -428,7 +449,7 @@ pred_cancer_type_other_adj <- lapply(pred_cancer_type_other_adj, function(d) {
   d[, lpa_vs_healthy := lpa - d[cancer_before_acc_type_other == "Healthy"]$lpa[1]]
   d[, sb_vs_healthy := sb - d[cancer_before_acc_type_other == "Healthy"]$sb[1]]
   
-  # constrast cancer types vs healthy
+  # constrast cancer types vs others
   d[, sleep_vs_others := sleep - d[cancer_before_acc_type_other == "Others"]$sleep[1]]
   d[, mvpa_vs_others := mvpa - d[cancer_before_acc_type_other == "Others"]$mvpa[1]]
   d[, lpa_vs_others := lpa - d[cancer_before_acc_type_other == "Others"]$lpa[1]]
@@ -453,7 +474,7 @@ pred_cancer_type_other_adj <- split(pred_cancer_type_other_adj, pred_cancer_type
 pred_comp_cancer_type_other_adj <- lapply(pred_cancer_type_other_adj, function(l) {
   l <- as.data.frame(l[, c("sleep", "mvpa", "lpa", "sb")])
   l <- apply(l, 2, as.numeric)
-  l <- apply(l, 2, describe_posterior, centrality = "mean")
+  l <- apply(l, 2, function(p) describe_posterior(p, centrality = "mean", ci = 0.99))
   l <- Map(cbind, l, part = names(l))
   l <- rbindlist(l)
   l
@@ -466,7 +487,7 @@ pred_comp_cancer_type_other_adj <- rbindlist(pred_comp_cancer_type_other_adj)
 diff1_comp_cancer_type_other_adj <- lapply(pred_cancer_type_other_adj, function(l) {
   l <- as.data.frame(l[, c("sleep_vs_healthy", "mvpa_vs_healthy", "lpa_vs_healthy", "sb_vs_healthy")])
   l <- apply(l, 2, as.numeric)
-  l <- apply(l, 2, describe_posterior, centrality = "mean")
+  l <- apply(l, 2, function(p) describe_posterior(p, centrality = "mean", ci = 0.99))
   l <- Map(cbind, l, constrast = names(l))
   l <- rbindlist(l)
   l
@@ -482,7 +503,7 @@ setnames(diff1_comp_cancer_type_other_adj, "CI_high", "CI_high_diff_ref_healthy"
 diff2_comp_cancer_type_other_adj <- lapply(pred_cancer_type_other_adj, function(l) {
   l <- as.data.frame(l[, c("sleep_vs_others", "mvpa_vs_others", "lpa_vs_others", "sb_vs_others")])
   l <- apply(l, 2, as.numeric)
-  l <- apply(l, 2, describe_posterior, centrality = "mean")
+  l <- apply(l, 2, function(p) describe_posterior(p, centrality = "mean", ci = 0.99))
   l <- Map(cbind, l, constrast = names(l))
   l <- rbindlist(l)
   l
@@ -544,45 +565,63 @@ comp_cancer_type_other_adj[, ci_high_others := ifelse(part == "mvpa", comp_cance
 comp_cancer_type_other_adj[, ci_high_others := ifelse(part == "lpa", comp_cancer_type_other_adj[cancer_before_acc_type_other == "Others" & part == "lpa"]$CI_high, ci_high_others)]
 comp_cancer_type_other_adj[, ci_high_others := ifelse(part == "sb", comp_cancer_type_other_adj[cancer_before_acc_type_other == "Others" & part == "sb"]$CI_high, ci_high_others)]
 
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Others", "Other Conditions Only", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Other Skin", "   Skin (non-melanoma)", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Lung", "   Lung", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Gastrointestinal Tract", "   Gastrointestinal Tract", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Blood", "   Blood", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Head & Neck", "   Head & Neck", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Colorectal", "   Colorectal", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Gynaecological", "   Gynaecological", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Other Cancer", "   Other Cancer", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Genitourinary", "   Genitourinary", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Endocrine Gland", "   Endocrine Gland", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Breast", "   Breast", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Melanoma", "   Melanoma", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Prostate", "   Prostate", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Multiple Primary", "   Multiple Primary", cancer_before_acc_type_other)]
+
 ## sort by MVPA
 ## healthy as bottom in plot
-comp_cancer_type_other_adj[, cancer_before_acc_type_other := factor(cancer_before_acc_type_other, ordered = TRUE,
-                                                            levels = c(
-                                                              "Healthy",
-                                                              "Others",
-                                                              "Other Skin",
-                                                              "Prostate",
-                                                              "Melanoma",
-                                                              "Endocrine Gland",
-                                                              "Breast",
-                                                              "Other Cancer",
-                                                              "Colorectal",
-                                                              "Gynaecological",
-                                                              "Genitourinary",
-                                                              "Head & Neck",
-                                                              "Blood",
-                                                              "Gastrointestinal Tract",
-                                                              "Lung",
-                                                              "Multiple Primary"))]
-# # healthy as top in plot
 # comp_cancer_type_other_adj[, cancer_before_acc_type_other := factor(cancer_before_acc_type_other, ordered = TRUE,
-#                                                         levels = c(
-#                                                           "Multiple Primary",
-#                                                           "Lung",
-#                                                           "Gastrointestinal Tract",
-#                                                           "Blood",
-#                                                           "Head & Neck",
-#                                                           "Colorectal",
-#                                                           "Gynaecological",
-#                                                           "Other Cancer",
-#                                                           "Genitourinary",
-#                                                           "Endocrine Gland",
-#                                                           "Breast",
-#                                                           "Melanoma",
-#                                                           "Prostate",
-#                                                           "Other Skin",
-#                                                           "Healthy"
-#                                                         ))]
+#                                                             levels = c(
+#                                                               "Healthy",
+#                                                               "Other Conditions Only",
+#                                                               "Skin (non-melanoma)",
+#                                                               "Prostate",
+#                                                               "Melanoma",
+#                                                               "Endocrine Gland",
+#                                                               "Breast",
+#                                                               "Other Cancer",
+#                                                               "Colorectal",
+#                                                               "Gynaecological",
+#                                                               "Genitourinary",
+#                                                               "Head & Neck",
+#                                                               "Blood",
+#                                                               "Gastrointestinal Tract",
+#                                                               "Lung",
+#                                                               "Multiple Primary"))]
+# # healthy as top in plot
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := factor(cancer_before_acc_type_other, ordered = TRUE,
+                                                        levels = c(
+                                                          "   Multiple Primary",
+                                                          "   Lung",
+                                                          "   Gastrointestinal Tract",
+                                                          "   Blood",
+                                                          "   Head & Neck",
+                                                          "   Colorectal",
+                                                          "   Gynaecological",
+                                                          "   Other Cancer",
+                                                          "   Genitourinary",
+                                                          "   Endocrine Gland",
+                                                          "   Breast",
+                                                          "   Melanoma",
+                                                          "   Prostate",
+                                                          "   Skin (non-melanoma)",
+                                                          "Cancer",
+                                                          "Other Conditions Only",
+                                                          "Healthy"
+                                                        ))]
 
 comp_cancer_type_other_adj[, part := ifelse(part == "sleep", "Sleep period", part)]
 comp_cancer_type_other_adj[, part := ifelse(part == "mvpa", "Moderate-to-vigorous physical activity", part)]
@@ -599,10 +638,10 @@ comp_cancer_type_other_adj[, est_sig := paste0(estimates, " ", sig_ref_healthy, 
 ## plot -----------------------
 (plot_comp_cancer_type_other_sleep <- 
    ggplot(comp_cancer_type_other_adj[part == "Sleep period"], aes(x = cancer_before_acc_type_other, y = Mean)) +
-   # geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
-   # geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "longdash", colour = "#a8a8a8") +
-   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
+   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#F2F2F2", alpha = 0.1) +
    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) +
+   geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+   geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
    geom_pointrange(aes(ymin = CI_low,
                        ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
    geom_text(aes(y = 600, label = TeX(est_sig, output = "character")), parse = TRUE,
@@ -640,10 +679,10 @@ comp_cancer_type_other_adj[, est_sig := paste0(estimates, " ", sig_ref_healthy, 
 )
 (plot_comp_cancer_type_other_mvpa <- 
    ggplot(comp_cancer_type_other_adj[part == "Moderate-to-vigorous physical activity"], aes(x = cancer_before_acc_type_other, y = Mean)) +
-    # geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
-    # geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "longdash", colour = "#a8a8a8") +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#F2F2F2", alpha = 0.1) +
     geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) +
+    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
     geom_text(aes(y = 35, label = TeX(est_sig, output = "character")), parse = TRUE,
@@ -682,8 +721,10 @@ comp_cancer_type_other_adj[, est_sig := paste0(estimates, " ", sig_ref_healthy, 
 
 (plot_comp_cancer_type_other_lpa <- 
     ggplot(comp_cancer_type_other_adj[part == "Light physical activity"], aes(x = cancer_before_acc_type_other, y = Mean)) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) +    
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#F2F2F2", alpha = 0.1) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) +
+    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
     geom_text(aes(y = 350, label = TeX(est_sig, output = "character")), parse = TRUE,
@@ -722,10 +763,10 @@ comp_cancer_type_other_adj[, est_sig := paste0(estimates, " ", sig_ref_healthy, 
 
 (plot_comp_cancer_type_other_sb <- 
     ggplot(comp_cancer_type_other_adj[part == "Sedentary behaviour"], aes(x = cancer_before_acc_type_other, y = Mean)) +
-    # geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
-    # geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "longdash", colour = "#a8a8a8") +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#F2F2F2", alpha = 0.1) +
     geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) + 
+    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
     geom_text(aes(y = 650, label = TeX(est_sig, output = "character")), parse = TRUE,
@@ -825,3 +866,4 @@ ggarrange(
   nrow = 4
 )
 dev.off()
+
