@@ -1,10 +1,11 @@
 source("ukb-cancer-24h-utils.R")
 source(paste0(redir, "ukb_utils.R"))
-# source("ukb-cancer-24h-data.R")
+source("ukb-cancer-24h-data.R")
 
 # main model --------
 fit_cancer_time_since_diag_other_adj <- brmcoda(clr_cancer_acc,
                                           mvbind(ilr1, ilr2, ilr3) ~ cancer_time_since_diag_other +
+                                            # + other_conds_at_acc +
                                             s(age_at_acc) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation),
                                           # save_pars = save_pars(all = TRUE),
                                           warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
@@ -220,7 +221,7 @@ comp_cancer_time_since_diag_other_adj[, sig_ref_cancer  := ifelse(nonsig_vs_canc
 comp_cancer_time_since_diag_other_adj[, sig_ref_cancer  := ifelse(nonsig_vs_cancer == FALSE & !is.na(Mean_diff_ref_cancer) & cancer_time_since_diag_other == "1-5 years since diagnosis",
                                                                  "$^d$", "$\\phantom^d}$")]
 comp_cancer_time_since_diag_other_adj[, sig_ref_cancer  := ifelse(nonsig_vs_cancer == FALSE & !is.na(Mean_diff_ref_cancer) & cancer_time_since_diag_other == "More than 5 years since diagnosis",
-                                                                 "$^d$", "$\\phantom{^d}$")]
+                                                                 "$^e$", "$\\phantom{^e}$")]
 
 # leave healthy empty
 comp_cancer_time_since_diag_other_adj[, sig_ref_healthy := ifelse(cancer_time_since_diag_other == "Healthy", "$\\phantom{^a}$", sig_ref_healthy)]
@@ -266,7 +267,7 @@ comp_cancer_time_since_diag_other_adj[, ci_high_others := ifelse(part == "sb", c
 comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag_other == "More than 5 years since diagnosis", "    >5 years since diagnosis", cancer_time_since_diag_other)]
 comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag_other == "1-5 years since diagnosis",         "    1-5 years since diagnosis", cancer_time_since_diag_other)]
 comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag_other == "Less than 1 year since diagnosis",  "    <1 year since diagnosis", cancer_time_since_diag_other)]
-comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag_other == "Others", "Other conditions only", cancer_time_since_diag_other)]
+comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag_other == "Others", "Other Conditions Only", cancer_time_since_diag_other)]
 
 comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := factor(cancer_time_since_diag_other, ordered = TRUE,
                                                                                levels = c(
@@ -274,7 +275,7 @@ comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := factor(c
                                                                                  "    1-5 years since diagnosis",
                                                                                  "    <1 year since diagnosis",
                                                                                  "Cancer",
-                                                                                 "Other conditions only",
+                                                                                 "Other Conditions Only",
                                                                                  "Healthy"))]
 
 comp_cancer_time_since_diag_other_adj[, part := ifelse(part == "sleep", "Sleep period", part)]
@@ -289,16 +290,21 @@ comp_cancer_time_since_diag_other_adj[, estimates := paste0(round(Mean, 0), "[",
 comp_cancer_time_since_diag_other_adj[, est_sig := paste0(estimates, " ", sig_ref_healthy, sig_ref_others, sig_ref_cancer)]
 # comp_cancer_time_since_diag_other_adj[, est_sig := paste0(estimates, " ", str_replace_na(sig_ref_healthy, " "), str_replace_na(sig_ref_others, " "), str_replace_na(sig_ref_cancer, " "))]
 
+# for tables
+comp_cancer_time_since_diag_other_adj[, estimates_contrast_healthy := paste0(round(Mean_diff_ref_healthy, 2), "[", round(CI_low_diff_ref_healthy, 2), ", ", round(CI_high_diff_ref_healthy, 2), "]")]
+comp_cancer_time_since_diag_other_adj[, estimates_contrast_others := paste0(round(Mean_diff_ref_others, 2), "[", round(CI_low_diff_ref_others, 2), ", ", round(CI_high_diff_ref_others, 2), "]")]
+comp_cancer_time_since_diag_other_adj[, estimates_contrast_cancer := paste0(round(Mean_diff_ref_cancer, 2), "[", round(CI_low_diff_ref_cancer, 2), ", ", round(CI_high_diff_ref_cancer, 2), "]")]
+
 ## plot -----------------------
 (plot_comp_cancer_time_since_diag_other_sleep <- 
    ggplot(comp_cancer_time_since_diag_other_adj[part == "Sleep period"], aes(x = cancer_time_since_diag_other, y = Mean)) +
-   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#D9D9D9", alpha = 0.1) +
+   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) + 
-   geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+   geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
    geom_pointrange(aes(ymin = CI_low,
                        ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
-   geom_text(aes(y = 650, label = TeX(est_sig, output = "character")), parse = TRUE,
+   geom_text(aes(y = 600, label = TeX(est_sig, output = "character")), parse = TRUE,
              hjust = 1, nudge_x = 0, 
              family = "Arial Narrow", size = 3,
              show.legend = FALSE) +
@@ -307,9 +313,9 @@ comp_cancer_time_since_diag_other_adj[, est_sig := paste0(estimates, " ", sig_re
              family = "Arial Narrow", size = 3,
              show.legend = FALSE) +
    geom_segment(aes(x = 0, yend = 500), col = "black", linewidth = 0.5) +
-   geom_segment(aes(x = 0, yend = 650), col = "black", linewidth = 0.5) +   
-   scale_y_continuous(limits = c(500, 650),
-                      breaks = c(500, 575,  650),
+   geom_segment(aes(x = 0, yend = 600), col = "black", linewidth = 0.5) +   
+   scale_y_continuous(limits = c(500, 600),
+                      breaks = c(500, 550,  600),
                       name = "Sleep period") +
    scale_colour_manual(values = pal_combined) +
    labs(x = "", y = "", colour = "") +
@@ -334,9 +340,9 @@ comp_cancer_time_since_diag_other_adj[, est_sig := paste0(estimates, " ", sig_re
 
 (plot_comp_cancer_time_since_diag_other_mvpa <- 
     ggplot(comp_cancer_time_since_diag_other_adj[part == "Moderate-to-vigorous physical activity"], aes(x = cancer_time_since_diag_other, y = Mean)) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#D9D9D9", alpha = 0.1) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
     geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) + 
-    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
     geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
@@ -376,9 +382,9 @@ comp_cancer_time_since_diag_other_adj[, est_sig := paste0(estimates, " ", sig_re
 
 (plot_comp_cancer_time_since_diag_other_lpa <- 
     ggplot(comp_cancer_time_since_diag_other_adj[part == "Light physical activity"], aes(x = cancer_time_since_diag_other, y = Mean)) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#D9D9D9", alpha = 0.1) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
     geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) + 
-    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
     geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
@@ -418,9 +424,9 @@ comp_cancer_time_since_diag_other_adj[, est_sig := paste0(estimates, " ", sig_re
 
 (plot_comp_cancer_time_since_diag_other_sb <- 
     ggplot(comp_cancer_time_since_diag_other_adj[part == "Sedentary behaviour"], aes(x = cancer_time_since_diag_other, y = Mean)) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#D9D9D9", alpha = 0.1) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
     geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) +
-    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#a8a8a8") +
+    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
     geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
