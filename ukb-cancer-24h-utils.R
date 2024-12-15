@@ -16,28 +16,26 @@ pal_time <- c("#708885", "#EAD3BF", "#D2A7A7", "#B87474", "#4E2F26")
 pal_combined <- c("#708885", "#EAD3BF", "#4E2F26", "#ba6c6e", "#CA8F90", "#E4C7C7")
 pal_combined <- c("#E4C7C7", "#CA8F90", "#ba6c6e", "#4E2F26", "#EAD3BF", "#708885")
 
-pal_type <- c("#666666", "#586085",
-              "#9D93B9", "#3b3960", "#4682b4", "#8CAACB", "#4F7375", "#f5c98e", "#ea967c",
-              "#9c6755",
-              "#dfa398", "#efcbcb", "#d65b5a", "#944C4C", 
-              
-              "#4E2F26", "#EAD3BF",
+pal_type <- c("#666666", "#586085", "#9D93B9", "#3b3960", 
+              "#4682b4", "#8CAACB", "#4F7375", "#f5c98e", 
+              "#ea967c", "#9c6755", "#dfa398", "#efcbcb", 
+              "#d65b5a", "#944C4C", "#4E2F26", "#EAD3BF",
               "#708885"
 )
 
-pal <- c("#a8a8a8", "#EAD3BF", "#ba6c6e")
-pal_time <- c("#a8a8a8", "#EAD3BF", "#D2A7A7", "#B87474", "#4E2F26")
-pal_combined <- c("#a8a8a8", "#EAD3BF", "#4E2F26", "#ba6c6e", "#CA8F90", "#E4C7C7")
-pal_combined <- c("#E4C7C7", "#CA8F90", "#ba6c6e", "#4E2F26", "#EAD3BF", "#a8a8a8")
-
-pal_type <- c("#586085",
-              "#9D93B9", "#3b3960", "#4682b4", "#8CAACB", "#4F7375", "#7b906f", "#f5c98e", "#ea967c",
-              "#9c6755",
-              "#dfa398", "#efcbcb", "#d65b5a", "#944C4C", 
-              
-              "#4E2F26", "#EAD3BF",
-              "#a8a8a8"
-)
+# pal <- c("#a8a8a8", "#EAD3BF", "#ba6c6e")
+# pal_time <- c("#a8a8a8", "#EAD3BF", "#D2A7A7", "#B87474", "#4E2F26")
+# pal_combined <- c("#a8a8a8", "#EAD3BF", "#4E2F26", "#ba6c6e", "#CA8F90", "#E4C7C7")
+# pal_combined <- c("#E4C7C7", "#CA8F90", "#ba6c6e", "#4E2F26", "#EAD3BF", "#a8a8a8")
+# 
+# pal_type <- c("#586085",
+#               "#9D93B9", "#3b3960", "#4682b4", "#8CAACB", "#4F7375", "#7b906f", "#f5c98e", "#ea967c",
+#               "#9c6755",
+#               "#dfa398", "#efcbcb", "#d65b5a", "#944C4C", 
+#               
+#               "#4E2F26", "#EAD3BF",
+#               "#a8a8a8"
+# )
 
 # pal_type <- c("#708885", "#EAD3BF", 
 #               "#4E2F26", "#944C4C", "#d65b5a", "#efcbcb", "#dfa398", "#9c6755",  "#ea967c", "#f5c98e", 
@@ -150,25 +148,25 @@ pal_time_quantile <- c("#666666", "#4682b4", "#f5c98e", "#9c6755",
 # )
 
 # pal_jco()(10)
-scales::show_col(tvthemes:::brooklyn99_palette$Dark)
-
-scales::show_col(tvthemes:::hilda_palette$Day)
-scales::show_col(tvthemes:::hilda_palette$Dusk)
-scales::show_col(tvthemes:::hilda_palette$Night)
-
-scales::show_col(tvthemes:::theLastAirbender_palette$FireNation)
-scales::show_col(tvthemes:::theLastAirbender_palette$AirNomads)
-scales::show_col(tvthemes:::theLastAirbender_palette$EarthKingdom)
-scales::show_col(tvthemes:::theLastAirbender_palette$WaterTribe)
-
-scales::show_col(tvthemes:::westeros_palette$Stark)
-scales::show_col(tvthemes:::westeros_palette$Stannis)
-scales::show_col(tvthemes:::westeros_palette$Lannister)
-scales::show_col(tvthemes:::westeros_palette$Tyrell)
-scales::show_col(tvthemes:::westeros_palette$Targaryen)
-scales::show_col(tvthemes:::westeros_palette$Martell)
-scales::show_col(tvthemes:::westeros_palette$Tully)
-scales::show_col(tvthemes:::westeros_palette$Greyjoy)
-scales::show_col(tvthemes:::westeros_palette$Manderly)
-scales::show_col(tvthemes:::westeros_palette$Arryn)
-
+# scales::show_col(tvthemes:::brooklyn99_palette$Dark)
+# 
+# scales::show_col(tvthemes:::hilda_palette$Day)
+# scales::show_col(tvthemes:::hilda_palette$Dusk)
+# scales::show_col(tvthemes:::hilda_palette$Night)
+# 
+# scales::show_col(tvthemes:::theLastAirbender_palette$FireNation)
+# scales::show_col(tvthemes:::theLastAirbender_palette$AirNomads)
+# scales::show_col(tvthemes:::theLastAirbender_palette$EarthKingdom)
+# scales::show_col(tvthemes:::theLastAirbender_palette$WaterTribe)
+# 
+# scales::show_col(tvthemes:::westeros_palette$Stark)
+# scales::show_col(tvthemes:::westeros_palette$Stannis)
+# scales::show_col(tvthemes:::westeros_palette$Lannister)
+# scales::show_col(tvthemes:::westeros_palette$Tyrell)
+# scales::show_col(tvthemes:::westeros_palette$Targaryen)
+# scales::show_col(tvthemes:::westeros_palette$Martell)
+# scales::show_col(tvthemes:::westeros_palette$Tully)
+# scales::show_col(tvthemes:::westeros_palette$Greyjoy)
+# scales::show_col(tvthemes:::westeros_palette$Manderly)
+# scales::show_col(tvthemes:::westeros_palette$Arryn)
+# 

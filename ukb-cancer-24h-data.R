@@ -53,47 +53,47 @@ source(paste0(redir, "ukb_utils.R"))
 #   "icd_x_any"
 # )
 # 
-# # cancer data management  ---------------
-# # notes for Flora: 13 cancer composite related to PA
-# # (bladder, breast, colon, endometrial, oesophageal adenocarcinoma, gastric cardia, head and neck, kidney, liver, lung, myeloid leukaemia, myeloma, and rectum)
-# d_acc_icd[, icd_not_cancer := ifelse((Reduce(`|`, lapply(icd_not_cancer_any_vars, function(v) f1(get(v), 1)))),
-#                                      1, 0)]
-# 
-# d_acc_icd[, icd_any := ifelse((Reduce(`|`, lapply(icd_any_vars, function(v) f1(get(v), 1)))),
-#                               1, 0)]
-# 
-# table(d_acc_icd$icd_not_cancer, useNA = "always")
-# table(d_acc_icd$icd_ii_any, useNA = "always")
-# table(d_acc_icd$icd_ii_group, useNA = "always")
-# table(d_acc_icd$icd_any, useNA = "always")
-# 
-# # code cancer --------
-# # time since first other diagnoses
-# # d_acc_icd[, age_diff_fo_other_cond_acc := year(acc_startdate) - year(icd_not_ii_sub_fo)]
-# d_acc_icd[, age_diff_fo_other_cond_acc := (acc_startdate - icd_not_ii_sub_fo)/365.25]
-# table(round(d_acc_icd$age_diff_fo_other_cond_acc), useNA = "always")
-# 
-# # time since most recent other diagnoses
-# d_acc_icd[, age_diff_lo_other_cond_acc := (acc_startdate - icd_not_ii_sub_lo)/365.25]
-# table(round(d_acc_icd$age_diff_lo_other_cond_acc), useNA = "always")
-# 
-# # number of cancer diags after acc
-# nrow(d_acc_icd[((acc_startdate - icd_ii_sub_fo)/365.25) <= 0])
-# 
-# # number of cancer diags within 1y
-# nrow(d_acc_icd[((acc_startdate - icd_ii_sub_fo)/365.25) %gele% c(-1, 0)])
-# 
-# nrow(d_acc_icd[((acc_startdate - icd_ii_sub_fo)/365.25) < -1])
-# 
-# # number of other diags 1y after acc
-# nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) < -1])
-# 
-# # number of other diags before acc
-# nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) >= 0])
-# 
-# # number of other diags within 1y
-# nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) %gele% c(-1, 0)])
-# 
+# cancer data management  ---------------
+# notes for Flora: 13 cancer composite related to PA
+# (bladder, breast, colon, endometrial, oesophageal adenocarcinoma, gastric cardia, head and neck, kidney, liver, lung, myeloid leukaemia, myeloma, and rectum)
+d_acc_icd[, icd_not_cancer := ifelse((Reduce(`|`, lapply(icd_not_cancer_any_vars, function(v) f1(get(v), 1)))),
+                                     1, 0)]
+
+d_acc_icd[, icd_any := ifelse((Reduce(`|`, lapply(icd_any_vars, function(v) f1(get(v), 1)))),
+                              1, 0)]
+
+table(d_acc_icd$icd_not_cancer, useNA = "always")
+table(d_acc_icd$icd_ii_any, useNA = "always")
+table(d_acc_icd$icd_ii_group, useNA = "always")
+table(d_acc_icd$icd_any, useNA = "always")
+
+# code cancer --------
+# time since first other diagnoses
+# d_acc_icd[, age_diff_fo_other_cond_acc := year(acc_startdate) - year(icd_not_ii_sub_fo)]
+d_acc_icd[, age_diff_fo_other_cond_acc := (acc_startdate - icd_not_ii_sub_fo)/365.25]
+table(round(d_acc_icd$age_diff_fo_other_cond_acc), useNA = "always")
+
+# time since most recent other diagnoses
+d_acc_icd[, age_diff_lo_other_cond_acc := (acc_startdate - icd_not_ii_sub_lo)/365.25]
+table(round(d_acc_icd$age_diff_lo_other_cond_acc), useNA = "always")
+
+# number of cancer diags after acc
+nrow(d_acc_icd[((acc_startdate - icd_ii_sub_fo)/365.25) <= 0])
+
+# number of cancer diags within 1y
+nrow(d_acc_icd[((acc_startdate - icd_ii_sub_fo)/365.25) %gele% c(-1, 0)])
+
+nrow(d_acc_icd[((acc_startdate - icd_ii_sub_fo)/365.25) < -1])
+
+# number of other diags 1y after acc
+nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) < -1])
+
+# number of other diags before acc
+nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) >= 0])
+
+# number of other diags within 1y
+nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) %gele% c(-1, 0)])
+
 # # number of other diags up to 1y after acc
 # nrow(d_acc_icd[((acc_startdate - icd_not_ii_sub_fo)/365.25) >= -1])
 # 
@@ -277,17 +277,6 @@ source(paste0(redir, "ukb_utils.R"))
 # 
 # table(d_acc_icd$cancer_before_acc_type_other, useNA = "always")
 # 
-# # other cond
-# d_acc_icd[, other_conds_at_acc := ifelse(cancer_other_before_acc == "Healthy", 0, icd_not_cancer)]
-# table(d_acc_icd$other_conds_at_acc, useNA = "always")
-# 
-# # number of other conditions
-# icd_n_vars <- grep("_n$", names(d_acc_icd), value = T)
-# icd_n_vars <- icd_n_vars[icd_n_vars %nin% c("icd_ii_n", "icd_ii_type_n", "icd_ii_subtype_n")]
-# 
-# d_acc_icd[, icd_not_cancer_n := rowSums(d_acc_icd[, icd_n_vars, with = FALSE], na.rm = FALSE)]
-# d_acc_icd[, icd_not_cancer_n := ifelse(cancer_other_before_acc != "Healthy", icd_not_cancer_n, 0)]
-# 
 # # exclude those had cancer after acc -------------------
 # d_cancer_acc <- d_acc_icd[!is.na(cancer_other_before_acc)]
 # 
@@ -306,10 +295,10 @@ source(paste0(redir, "ukb_utils.R"))
 # table(round(d_cancer_acc$icd_ii_time_since_lo), useNA = "always")
 # identical(nrow(d_cancer_acc[icd_ii_time_since_lo == 0]), (nrow(d_cancer_acc[cancer_before_acc_type_other %in% c("Healthy", "Others")])))
 # 
-# saveRDS(d_cancer_acc, paste0(outputdir, "d_cancer_acc", ".RDS"))
+# saveRDS(d_cancer_acc, paste0(inputdir, "d_cancer_acc", ".RDS"))
 
 # Composition and ilr ----------------------
-d_cancer_acc <- readRDS(paste0(outputdir, "d_cancer_acc", ".RDS"))
+d_cancer_acc <- readRDS(paste0(inputdir, "d_cancer_acc", ".RDS"))
 d_cancer_acc <- d_cancer_acc[, -grep("ilr", names(d_cancer_acc), value = TRUE), with = FALSE]
 
 sbp <- matrix(c(
