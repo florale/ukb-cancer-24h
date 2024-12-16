@@ -353,49 +353,49 @@ print(d_cancer_acc_desc[cancer_other_before_acc == "Cancer", .(
 ), by = smoking], digits = 3)
 
 ## age group
-print(d_cancer_acc_desc[age >= 65 & cancer_other_before_acc == "Cancer", .(
+print(d_cancer_acc_desc[age_at_acc >= 65 & cancer_other_before_acc == "Cancer", .(
   quant50 = quantile(mvpa, probs = 0.50),
   quant25 = quantile(mvpa, probs = 0.25),
   quant75 = quantile(mvpa, probs = 0.75)
 )], digits = 1)
 
-print(d_cancer_acc_desc[age >= 65 & cancer_other_before_acc == "Cancer", .(
+print(d_cancer_acc_desc[age_at_acc >= 65 & cancer_other_before_acc == "Cancer", .(
   quant50 = quantile(lpa, probs = 0.50),
   quant25 = quantile(lpa, probs = 0.25),
   quant75 = quantile(lpa, probs = 0.75)
 )], digits = 3)
 
-print(d_cancer_acc_desc[age >= 65 & cancer_other_before_acc == "Cancer", .(
+print(d_cancer_acc_desc[age_at_acc >= 65 & cancer_other_before_acc == "Cancer", .(
   quant50 = quantile(sb, probs = 0.50),
   quant25 = quantile(sb, probs = 0.25),
   quant75 = quantile(sb, probs = 0.75)
 )], digits = 3)
 
-print(d_cancer_acc_desc[age >= 65 & cancer_other_before_acc == "Cancer", .(
+print(d_cancer_acc_desc[age_at_acc >= 65 & cancer_other_before_acc == "Cancer", .(
   quant50 = quantile(sleep, probs = 0.50),
   quant25 = quantile(sleep, probs = 0.25),
   quant75 = quantile(sleep, probs = 0.75)
 )], digits = 3)
 
-print(d_cancer_acc_desc[age < 65 & cancer_other_before_acc == "Cancer", .(
+print(d_cancer_acc_desc[age_at_acc < 65 & cancer_other_before_acc == "Cancer", .(
   quant50 = quantile(mvpa, probs = 0.50),
   quant25 = quantile(mvpa, probs = 0.25),
   quant75 = quantile(mvpa, probs = 0.75)
 )], digits = 1)
 
-print(d_cancer_acc_desc[age < 65 & cancer_other_before_acc == "Cancer", .(
+print(d_cancer_acc_desc[age_at_acc < 65 & cancer_other_before_acc == "Cancer", .(
   quant50 = quantile(lpa, probs = 0.50),
   quant25 = quantile(lpa, probs = 0.25),
   quant75 = quantile(lpa, probs = 0.75)
 )], digits = 3)
 
-print(d_cancer_acc_desc[age < 65 & cancer_other_before_acc == "Cancer", .(
+print(d_cancer_acc_desc[age_at_acc < 65 & cancer_other_before_acc == "Cancer", .(
   quant50 = quantile(sb, probs = 0.50),
   quant25 = quantile(sb, probs = 0.25),
   quant75 = quantile(sb, probs = 0.75)
 )], digits = 3)
 
-print(d_cancer_acc_desc[age < 65 & cancer_other_before_acc == "Cancer", .(
+print(d_cancer_acc_desc[age_at_acc < 65 & cancer_other_before_acc == "Cancer", .(
   quant50 = quantile(sleep, probs = 0.50),
   quant25 = quantile(sleep, probs = 0.25),
   quant75 = quantile(sleep, probs = 0.75)
@@ -451,10 +451,18 @@ print(d_cancer_acc_desc[cancer_other_before_acc == "Cancer", .(
   quant75 = quantile(sleep, probs = 0.75)
 ), by = cancer_before_acc_type_other], digits = 3)
 
+# nobs
+egltable(c(
+  "sex", "white", "edu", "working", 
+  "smoking", "alcohol", "deprivationg"
+),
+strict = FALSE, data = d_cancer_acc_desc[cancer_other_before_acc == "Cancer"])
 
+egltable(c("bmig"
+),
+strict = FALSE, data = d_cancer_acc[cancer_other_before_acc == "Cancer"])
 
-
-
-
-
-
+nrow(d_cancer_acc_desc[age_at_acc < 65 & cancer_other_before_acc == "Cancer"])
+nrow(d_cancer_acc_desc[age_at_acc < 65 & cancer_other_before_acc == "Cancer"])/10152*100
+nrow(d_cancer_acc_desc[age_at_acc >= 65 & cancer_other_before_acc == "Cancer"])
+nrow(d_cancer_acc_desc[age_at_acc >= 65 & cancer_other_before_acc == "Cancer"])/10152*100

@@ -181,12 +181,33 @@ comp_cancer_type_other_adj[, ci_high_others := ifelse(part == "mvpa", comp_cance
 comp_cancer_type_other_adj[, ci_high_others := ifelse(part == "lpa", comp_cancer_type_other_adj[cancer_before_acc_type_other == "Others" & part == "lpa"]$CI_high, ci_high_others)]
 comp_cancer_type_other_adj[, ci_high_others := ifelse(part == "sb", comp_cancer_type_other_adj[cancer_before_acc_type_other == "Others" & part == "sb"]$CI_high, ci_high_others)]
 
-comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Others", "Other Conditions Only", cancer_before_acc_type_other)]
+# n
+comp_cancer_type_other_adj[, Cases := NA]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Healthy", "14 726", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Cancer", "10 152", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Others", "66 403", Cases)]
+
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Blood", "412", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Breast", "1 911", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Colorectal", "391", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Endocrine Gland", "79", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Gastrointestinal Tract", "100", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Genitourinary", "296", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Gynaecological", "401", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Head & Neck", "115", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Lung", "57", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Melanoma", "395", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Multiple Primary", "1 714", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Other Cancer", "148", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Other Skin", "3 017", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Prostate", "1 116", Cases)]
+
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Others", "Other Conditions", cancer_before_acc_type_other)]
 comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Other Skin", "   Skin (non-melanoma)", cancer_before_acc_type_other)]
 comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Lung", "   Lung", cancer_before_acc_type_other)]
 comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Gastrointestinal Tract", "   Gastrointestinal Tract", cancer_before_acc_type_other)]
 comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Blood", "   Blood", cancer_before_acc_type_other)]
-comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Head & Neck", "   Head & Neck", cancer_before_acc_type_other)]
+comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Head & Neck", "   Head and Neck", cancer_before_acc_type_other)]
 comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Colorectal", "   Colorectal", cancer_before_acc_type_other)]
 comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Gynaecological", "   Gynaecological", cancer_before_acc_type_other)]
 comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Other Cancer", "   Other Cancer", cancer_before_acc_type_other)]
@@ -202,7 +223,7 @@ comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_befor
 # comp_cancer_type_other_adj[, cancer_before_acc_type_other := factor(cancer_before_acc_type_other, ordered = TRUE,
 #                                                             levels = c(
 #                                                               "Healthy",
-#                                                               "Other Conditions Only",
+#                                                               "Non-cancer Conditions",
 #                                                               "Skin (non-melanoma)",
 #                                                               "Prostate",
 #                                                               "Melanoma",
@@ -224,7 +245,7 @@ comp_cancer_type_other_adj[, cancer_before_acc_type_other := factor(cancer_befor
                                                           "   Lung",
                                                           "   Gastrointestinal Tract",
                                                           "   Blood",
-                                                          "   Head & Neck",
+                                                          "   Head and Neck",
                                                           "   Genitourinary",
                                                           "   Gynaecological",
                                                           "   Colorectal",
@@ -235,7 +256,7 @@ comp_cancer_type_other_adj[, cancer_before_acc_type_other := factor(cancer_befor
                                                           "   Prostate",
                                                           "   Skin (non-melanoma)",
                                                           "Cancer",
-                                                          "Other Conditions Only",
+                                                          "Other Conditions",
                                                           "Healthy"
                                                         ))]
 
@@ -264,18 +285,22 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
    geom_pointrange(aes(ymin = CI_low,
                        ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
-   geom_text(aes(y = 650, label = TeX(est_sig, output = "character")), parse = TRUE,
-             hjust = 1, nudge_x = 0, 
-             family = "Arial Narrow", size = 3,
-             show.legend = FALSE) +
    geom_text(aes(y = 500, label = cancer_before_acc_type_other),
              hjust = 0, nudge_x = 0, 
              family = "Arial Narrow", size = 3,
              show.legend = FALSE) +
-   geom_segment(aes(x = 0, yend = 650), col = "black", linewidth = 0.5) +
+   geom_text(aes(y = 650, label = TeX(est_sig, output = "character")), parse = TRUE,
+             hjust = 0.5, nudge_x = 0, 
+             family = "Arial Narrow", size = 3,
+             show.legend = FALSE) +
+   geom_text(aes(y = 675, label = Cases),
+             hjust = 1, nudge_x = 0, 
+             family = "Arial Narrow", size = 3,
+             show.legend = FALSE) +
+   geom_segment(aes(x = 0, yend = 675), col = "black", linewidth = 0.5) +
    geom_segment(aes(x = 0, yend = 500), col = "black", linewidth = 0.5) +
-   scale_y_continuous(limits = c(500, 650),
-                      breaks = c(500, 575, 650),
+   scale_y_continuous(limits = c(500, 675),
+                      breaks = c(500, 675),
                       name = "Sleep period") +
    scale_colour_manual(values = pal_type) +
    labs(x = "", y = "", colour = "") +
@@ -305,18 +330,22 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
     geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
-    geom_text(aes(y = 35, label = TeX(est_sig, output = "character")), parse = TRUE,
-              hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_text(aes(y = 5, label = cancer_before_acc_type_other),
+    geom_text(aes(y = 0, label = cancer_before_acc_type_other),
               hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_segment(aes(x = 0, yend = 5), col = "black", linewidth = 0.5) +
-    geom_segment(aes(x = 0, yend = 35), col = "black", linewidth = 0.5) +
-    scale_y_continuous(limits = c(5, 35),
-                       breaks = c(5, 20, 35),
+    geom_text(aes(y = 33.75, label = TeX(est_sig, output = "character")), parse = TRUE,
+              hjust = 0.5, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_text(aes(y = 40, label = Cases),
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_segment(aes(x = 0, yend = 0), col = "black", linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = 40), col = "black", linewidth = 0.5) +
+    scale_y_continuous(limits = c(0, 40),
+                       breaks = c(0, 40),
                        name = "Moderate-to-vigorous physical activity") +
     scale_colour_manual(values = pal_type) +
     labs(x = "", y = "", colour = "") +
@@ -347,18 +376,22 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
     geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
-    geom_text(aes(y = 375, label = TeX(est_sig, output = "character")), parse = TRUE,
-              hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_text(aes(y = 225, label = cancer_before_acc_type_other),
+    geom_text(aes(y = 200, label = cancer_before_acc_type_other),
               hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_segment(aes(x = 0, yend = 225), col = "black", linewidth = 0.5) +
-    geom_segment(aes(x = 0, yend = 375), col = "black", linewidth = 0.5) +
-    scale_y_continuous(limits = c(225, 375),
-                       breaks = c(225, 300, 375),
+    geom_text(aes(y = 371.5, label = TeX(est_sig, output = "character")), parse = TRUE,
+              hjust = 0.5, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_text(aes(y = 400, label = Cases),
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_segment(aes(x = 0, yend = 200), col = "black", linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = 400), col = "black", linewidth = 0.5) +
+    scale_y_continuous(limits = c(200, 400),
+                       breaks = c(200, 400),
                        name = "Light physical activity") +
     scale_colour_manual(values = pal_type) +
     labs(x = "", y = "", colour = "") +
@@ -384,24 +417,28 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
 (plot_comp_cancer_type_other_sb <- 
     ggplot(comp_cancer_type_other_adj[part == "Sedentary behaviour"], aes(x = cancer_before_acc_type_other, y = Mean)) +
     geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) + 
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) +
     geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
     geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
-    geom_text(aes(y = 650, label = TeX(est_sig, output = "character")), parse = TRUE,
-              hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
     geom_text(aes(y = 500, label = cancer_before_acc_type_other),
               hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_segment(aes(x = 0, yend = 650), col = "black", linewidth = 0.5) +
+    geom_text(aes(y = 650, label = TeX(est_sig, output = "character")), parse = TRUE,
+              hjust = 0.5, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_text(aes(y = 675, label = Cases),
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_segment(aes(x = 0, yend = 675), col = "black", linewidth = 0.5) +
     geom_segment(aes(x = 0, yend = 500), col = "black", linewidth = 0.5) +
-    scale_y_continuous(limits = c(500, 650),
-                       breaks = c(500, 575, 650),
-                       name = "Sedentary behaviour") +
+    scale_y_continuous(limits = c(500, 675),
+                       breaks = c(500, 675),
+                       name = "Sedentary") +
     scale_colour_manual(values = pal_type) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +
@@ -486,4 +523,5 @@ ggarrange(
   nrow = 4
 )
 dev.off()
+
 

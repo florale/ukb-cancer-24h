@@ -215,13 +215,14 @@ comp_cancer_time_since_diag_other_adj[, sig_ref_healthy := ifelse(nonsig_vs_heal
                                                                   "$^a$", "$\\phantom{^a}$")]
 comp_cancer_time_since_diag_other_adj[, sig_ref_others  := ifelse(nonsig_vs_others == FALSE & Mean_diff_ref_others != 0, 
                                                                   "$^b$", "$\\phantom{^b}$")]
-comp_cancer_time_since_diag_other_adj[, sig_ref_cancer  := NA]
-comp_cancer_time_since_diag_other_adj[, sig_ref_cancer  := ifelse(nonsig_vs_cancer == FALSE & !is.na(Mean_diff_ref_cancer) & cancer_time_since_diag_other == "Less than 1 year since diagnosis",
-                                                                 "$^c$", "$\\phantom{^c}$")]
-comp_cancer_time_since_diag_other_adj[, sig_ref_cancer  := ifelse(nonsig_vs_cancer == FALSE & !is.na(Mean_diff_ref_cancer) & cancer_time_since_diag_other == "1-5 years since diagnosis",
-                                                                 "$^d$", "$\\phantom^d}$")]
-comp_cancer_time_since_diag_other_adj[, sig_ref_cancer  := ifelse(nonsig_vs_cancer == FALSE & !is.na(Mean_diff_ref_cancer) & cancer_time_since_diag_other == "More than 5 years since diagnosis",
-                                                                 "$^e$", "$\\phantom{^e}$")]
+
+comp_cancer_time_since_diag_other_adj[, sig_ref_cancer_15vs1  := ifelse(nonsig_vs_cancer == FALSE & !is.na(Mean_diff_ref_cancer) & cancer_time_since_diag_other == "Less than 1 year since diagnosis",
+                                                                          "$^c$", "$\\phantom{^c}$")]
+comp_cancer_time_since_diag_other_adj[, sig_ref_cancer_5vs15  := ifelse(nonsig_vs_cancer == FALSE & !is.na(Mean_diff_ref_cancer) & cancer_time_since_diag_other == "1-5 years since diagnosis",
+                                                                          "$^d$", "$\\phantom{^d}$")]
+comp_cancer_time_since_diag_other_adj[, sig_ref_cancer_5vs1  := ifelse(nonsig_vs_cancer == FALSE & !is.na(Mean_diff_ref_cancer) & cancer_time_since_diag_other == "More than 5 years since diagnosis",
+                                                                         "$^e$", "$\\phantom{^e}$")]
+comp_cancer_time_since_diag_other_adj[, sig_ref_cancer  := paste0(sig_ref_cancer_15vs1, sig_ref_cancer_5vs15, sig_ref_cancer_5vs1)]
 
 # leave healthy empty
 comp_cancer_time_since_diag_other_adj[, sig_ref_healthy := ifelse(cancer_time_since_diag_other == "Healthy", "$\\phantom{^a}$", sig_ref_healthy)]
@@ -263,11 +264,20 @@ comp_cancer_time_since_diag_other_adj[, ci_high_others := ifelse(part == "mvpa",
 comp_cancer_time_since_diag_other_adj[, ci_high_others := ifelse(part == "lpa", comp_cancer_time_since_diag_other_adj[cancer_time_since_diag_other == "Others" & part == "lpa"]$CI_high, ci_high_others)]
 comp_cancer_time_since_diag_other_adj[, ci_high_others := ifelse(part == "sb", comp_cancer_time_since_diag_other_adj[cancer_time_since_diag_other == "Others" & part == "sb"]$CI_high, ci_high_others)]
 
+# n
+comp_cancer_time_since_diag_other_adj[, Cases := NA]
+comp_cancer_time_since_diag_other_adj[, Cases := ifelse(cancer_time_since_diag_other == "Healthy", "14 726", Cases)]
+comp_cancer_time_since_diag_other_adj[, Cases := ifelse(cancer_time_since_diag_other == "Cancer", "10 152", Cases)]
+comp_cancer_time_since_diag_other_adj[, Cases := ifelse(cancer_time_since_diag_other == "Others", "66 403", Cases)]
+comp_cancer_time_since_diag_other_adj[, Cases := ifelse(cancer_time_since_diag_other == "More than 5 years since diagnosis", "5 730", Cases)]
+comp_cancer_time_since_diag_other_adj[, Cases := ifelse(cancer_time_since_diag_other == "1-5 years since diagnosis", "3 451", Cases)]
+comp_cancer_time_since_diag_other_adj[, Cases := ifelse(cancer_time_since_diag_other == "Less than 1 year since diagnosis", "971", Cases)]
+
 ## healthy in first row of plot
 comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag_other == "More than 5 years since diagnosis", "    >5 years since diagnosis", cancer_time_since_diag_other)]
 comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag_other == "1-5 years since diagnosis",         "    1-5 years since diagnosis", cancer_time_since_diag_other)]
 comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag_other == "Less than 1 year since diagnosis",  "    <1 year since diagnosis", cancer_time_since_diag_other)]
-comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag_other == "Others", "Other Conditions Only", cancer_time_since_diag_other)]
+comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := ifelse(cancer_time_since_diag_other == "Others", "Other Conditions", cancer_time_since_diag_other)]
 
 comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := factor(cancer_time_since_diag_other, ordered = TRUE,
                                                                                levels = c(
@@ -275,7 +285,7 @@ comp_cancer_time_since_diag_other_adj[, cancer_time_since_diag_other := factor(c
                                                                                  "    1-5 years since diagnosis",
                                                                                  "    <1 year since diagnosis",
                                                                                  "Cancer",
-                                                                                 "Other Conditions Only",
+                                                                                 "Other Conditions",
                                                                                  "Healthy"))]
 
 comp_cancer_time_since_diag_other_adj[, part := ifelse(part == "sleep", "Sleep period", part)]
@@ -304,18 +314,22 @@ comp_cancer_time_since_diag_other_adj[, estimates_contrast_cancer := paste0(roun
    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
    geom_pointrange(aes(ymin = CI_low,
                        ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
-   geom_text(aes(y = 600, label = TeX(est_sig, output = "character")), parse = TRUE,
-             hjust = 1, nudge_x = 0, 
-             family = "Arial Narrow", size = 3,
-             show.legend = FALSE) +
    geom_text(aes(y = 500, label = cancer_time_since_diag_other),
              hjust = 0, nudge_x = 0, 
              family = "Arial Narrow", size = 3,
              show.legend = FALSE) +
+   geom_text(aes(y = 627.5, label = TeX(est_sig, output = "character")), parse = TRUE,
+             hjust = 0.5, nudge_x = 0, 
+             family = "Arial Narrow", size = 3,
+             show.legend = FALSE) +
+   geom_text(aes(y = 650, label = Cases),
+             hjust = 1, nudge_x = 0, 
+             family = "Arial Narrow", size = 3,
+             show.legend = FALSE) +
    geom_segment(aes(x = 0, yend = 500), col = "black", linewidth = 0.5) +
-   geom_segment(aes(x = 0, yend = 600), col = "black", linewidth = 0.5) +   
-   scale_y_continuous(limits = c(500, 600),
-                      breaks = c(500, 550,  600),
+   geom_segment(aes(x = 0, yend = 650), col = "black", linewidth = 0.5) +   
+   scale_y_continuous(limits = c(500, 650),
+                      breaks = c(500,  650),
                       name = "Sleep period") +
    scale_colour_manual(values = pal_combined) +
    labs(x = "", y = "", colour = "") +
@@ -346,18 +360,22 @@ comp_cancer_time_since_diag_other_adj[, estimates_contrast_cancer := paste0(roun
     geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
-    geom_text(aes(y = 35, label = TeX(est_sig, output = "character")), parse = TRUE,
-              hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_text(aes(y = 5, label = cancer_time_since_diag_other),
+    geom_text(aes(y = 0, label = cancer_time_since_diag_other),
               hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_segment(aes(x = 0, yend = 5), col = "black", linewidth = 0.5) +
-    geom_segment(aes(x = 0, yend = 35), col = "black", linewidth = 0.5) +
-    scale_y_continuous(limits = c(5, 35),
-                       breaks = c(5, 20, 35),
+    geom_text(aes(y = 33.75, label = TeX(est_sig, output = "character")), parse = TRUE,
+              hjust = 0.5, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_text(aes(y = 40, label = Cases),
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_segment(aes(x = 0, yend = 0), col = "black", linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = 40), col = "black", linewidth = 0.5) +
+    scale_y_continuous(limits = c(0, 40),
+                       breaks = c(0, 40),
                        name = "Moderate-to-vigorous physical activity") +
     scale_colour_manual(values = pal_combined) +
     labs(x = "", y = "", colour = "") +
@@ -388,18 +406,22 @@ comp_cancer_time_since_diag_other_adj[, estimates_contrast_cancer := paste0(roun
     geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
-    geom_text(aes(y = 375, label = TeX(est_sig, output = "character")), parse = TRUE,
-              hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_text(aes(y = 225, label = cancer_time_since_diag_other),
+    geom_text(aes(y = 200, label = cancer_time_since_diag_other),
               hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_segment(aes(x = 0, yend = 225), col = "black", linewidth = 0.5) +
-    geom_segment(aes(x = 0, yend = 375), col = "black", linewidth = 0.5) +
-    scale_y_continuous(limits = c(225, 375),
-                       breaks = c(225, 300, 375),
+    geom_text(aes(y = 371.5, label = TeX(est_sig, output = "character")), parse = TRUE,
+              hjust = 0.5, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_text(aes(y = 400, label = Cases),
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_segment(aes(x = 0, yend = 200), col = "black", linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = 400), col = "black", linewidth = 0.5) +
+    scale_y_continuous(limits = c(200, 400),
+                       breaks = c(200, 400),
                        name = "Light physical activity") +
     scale_colour_manual(values = pal_combined) +
     labs(x = "", y = "", colour = "") +
@@ -430,19 +452,23 @@ comp_cancer_time_since_diag_other_adj[, estimates_contrast_cancer := paste0(roun
     geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
-    geom_text(aes(y = 600, label = TeX(est_sig, output = "character")), parse = TRUE,
-              hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
     geom_text(aes(y = 500, label = cancer_time_since_diag_other),
               hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_segment(aes(x = 0, yend = 600), col = "black", linewidth = 0.5) +
+    geom_text(aes(y = 627.5, label = TeX(est_sig, output = "character")), parse = TRUE,
+              hjust = 0.5, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_text(aes(y = 650, label = Cases),
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_segment(aes(x = 0, yend = 650), col = "black", linewidth = 0.5) +
     geom_segment(aes(x = 0, yend = 500), col = "black", linewidth = 0.5) +
-    scale_y_continuous(limits = c(500, 600),
-                       breaks = c(500, 550, 600),
-                       name = "Sedentary behaviour") +
+    scale_y_continuous(limits = c(500, 650),
+                       breaks = c(500, 650),
+                       name = "Sedentary") +
     scale_colour_manual(values = pal_combined) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +
@@ -466,8 +492,8 @@ comp_cancer_time_since_diag_other_adj[, estimates_contrast_cancer := paste0(roun
 
 grDevices::cairo_pdf(
   file = paste0(outputdir, "cancer_time_since_diag_other_est", ".pdf"),
-  width = 8,
-  height = 7,
+  width = 6,
+  height = 8,
 )
 
 ggarrange(
@@ -475,7 +501,7 @@ ggarrange(
   plot_comp_cancer_time_since_diag_other_lpa,
   plot_comp_cancer_time_since_diag_other_sb,
   plot_comp_cancer_time_since_diag_other_sleep,
-  nrow = 2, ncol = 2
+  nrow = 4
 )
 dev.off()
 
@@ -494,3 +520,4 @@ ggarrange(
   nrow = 4
 )
 dev.off()
+
