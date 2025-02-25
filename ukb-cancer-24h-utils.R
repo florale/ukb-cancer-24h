@@ -11,33 +11,33 @@ c("#978787", "#BEACA2", "#EFE3E0", "#A1B2C2", "#8399AE")
 # pal_type <- wes_palette("Zissou1", 15, type = "continuous")
 # pal_type <- c("#666666", "#f6e0d2", "#9c6755", "#659794", "#dfa398", "#f5c98e", "#d65b5a", "#586085", 
 #               "#6ca9c3", "#d1a391", "#7b906f", "#c0a5aa", "#7083a4", "#ad616c", "#4d3944")
-pal <- c("#708885", "#EAD3BF", "#ba6c6e")
-pal_time <- c("#708885", "#EAD3BF", "#D2A7A7", "#B87474", "#4E2F26")
-pal_combined <- c("#708885", "#EAD3BF", "#4E2F26", "#ba6c6e", "#CA8F90", "#E4C7C7")
-pal_combined <- c("#E4C7C7", "#CA8F90", "#ba6c6e", "#4E2F26", "#EAD3BF", "#708885")
+pal <- c("#708885", "#A9A9A9", "#ba6c6e")
+pal_time <- c("#708885", "#A9A9A9", "#D2A7A7", "#ba6c6e", "#4E2F26")
+pal_combined <- c("#708885", "#A9A9A9", "#4E2F26", "#ba6c6e", "#CA8F90", "#E4C7C7")
+pal_combined <- c("#E4C7C7", "#CA8F90", "#ba6c6e", "#4E2F26", "#A9A9A9", "#708885")
 
 pal_type <- c("#666666", "#586085", "#9D93B9", "#3b3960", 
               "#4682b4", "#8CAACB", "#4F7375", "#f5c98e", 
-              "#ea967c", "#9c6755", "#dfa398", "#efcbcb", 
-              "#d65b5a", "#944C4C", "#4E2F26", "#EAD3BF",
+              "#EAD3BF", "#9c6755", "#dfa398", "#efcbcb", 
+              "#d65b5a", "#944C4C", "#4E2F26", "#A9A9A9",
               "#708885"
 )
 
-# pal <- c("#a8a8a8", "#EAD3BF", "#ba6c6e")
-# pal_time <- c("#a8a8a8", "#EAD3BF", "#D2A7A7", "#B87474", "#4E2F26")
-# pal_combined <- c("#a8a8a8", "#EAD3BF", "#4E2F26", "#ba6c6e", "#CA8F90", "#E4C7C7")
-# pal_combined <- c("#E4C7C7", "#CA8F90", "#ba6c6e", "#4E2F26", "#EAD3BF", "#a8a8a8")
+# pal <- c("#a8a8a8", "#A9A9A9", "#ba6c6e")
+# pal_time <- c("#a8a8a8", "#A9A9A9", "#D2A7A7", "#B87474", "#4E2F26")
+# pal_combined <- c("#a8a8a8", "#A9A9A9", "#4E2F26", "#ba6c6e", "#CA8F90", "#E4C7C7")
+# pal_combined <- c("#E4C7C7", "#CA8F90", "#ba6c6e", "#4E2F26", "#A9A9A9", "#a8a8a8")
 # 
 # pal_type <- c("#586085",
 #               "#9D93B9", "#3b3960", "#4682b4", "#8CAACB", "#4F7375", "#7b906f", "#f5c98e", "#ea967c",
 #               "#9c6755",
 #               "#dfa398", "#efcbcb", "#d65b5a", "#944C4C", 
 #               
-#               "#4E2F26", "#EAD3BF",
+#               "#4E2F26", "#A9A9A9",
 #               "#a8a8a8"
 # )
 
-# pal_type <- c("#708885", "#EAD3BF", 
+# pal_type <- c("#708885", "#A9A9A9", 
 #               "#4E2F26", "#944C4C", "#d65b5a", "#efcbcb", "#dfa398", "#9c6755",  "#ea967c", "#f5c98e", 
 #               "#4F7375", "#8CAACB", "#4682b4", "#3b3960", "#9D93B9",
 #               "#586085" 

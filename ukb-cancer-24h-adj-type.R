@@ -1,6 +1,6 @@
 source("ukb-cancer-24h-utils.R")
 source(paste0(redir, "ukb_utils.R"))
-source("ukb-cancer-24h-data.R")
+# source("ukb-cancer-24h-data.R")
 
 # main model --------
 fit_cancer_type_other_adj <- brmcoda(clr_cancer_acc,
@@ -183,9 +183,9 @@ comp_cancer_type_other_adj[, ci_high_others := ifelse(part == "sb", comp_cancer_
 
 # n
 comp_cancer_type_other_adj[, Cases := NA]
-comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Healthy", "14 726", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Healthy", "13 722", Cases)]
 comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Cancer", "10 152", Cases)]
-comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Others", "66 403", Cases)]
+comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Others", "67 478", Cases)]
 
 comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Blood", "412", Cases)]
 comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Breast", "1 911", Cases)]
@@ -279,10 +279,10 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
 ## plot -----------------------
 (plot_comp_cancer_type_other_sleep <- 
    ggplot(comp_cancer_type_other_adj[part == "Sleep period"], aes(x = cancer_before_acc_type_other, y = Mean)) +
-   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
-   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) +
+   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#D9E0DD", alpha = 0.075) +
+   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#F2F2F2", alpha = 0.2) +
    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
-   geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
+   geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#A9A9A9") +
    geom_pointrange(aes(ymin = CI_low,
                        ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
    geom_text(aes(y = 500, label = cancer_before_acc_type_other),
@@ -324,10 +324,10 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
 )
 (plot_comp_cancer_type_other_mvpa <- 
    ggplot(comp_cancer_type_other_adj[part == "Moderate-to-vigorous physical activity"], aes(x = cancer_before_acc_type_other, y = Mean)) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#D9E0DD", alpha = 0.075) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#F2F2F2", alpha = 0.2) +
     geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
-    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
+    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#A9A9A9") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
     geom_text(aes(y = 0, label = cancer_before_acc_type_other),
@@ -370,10 +370,10 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
 
 (plot_comp_cancer_type_other_lpa <- 
     ggplot(comp_cancer_type_other_adj[part == "Light physical activity"], aes(x = cancer_before_acc_type_other, y = Mean)) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#D9E0DD", alpha = 0.075) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#F2F2F2", alpha = 0.2) +
     geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
-    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
+    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#A9A9A9") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
     geom_text(aes(y = 200, label = cancer_before_acc_type_other),
@@ -416,10 +416,10 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
 
 (plot_comp_cancer_type_other_sb <- 
     ggplot(comp_cancer_type_other_adj[part == "Sedentary behaviour"], aes(x = cancer_before_acc_type_other, y = Mean)) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#FAF7F4", alpha = 0.2) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#D9E0DD", alpha = 0.075) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#F2F2F2", alpha = 0.2) +
     geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
-    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#EAD3BF") +
+    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#A9A9A9") +
     geom_pointrange(aes(ymin = CI_low,
                         ymax = CI_high, colour = cancer_before_acc_type_other), size = 0.25, linewidth = 0.5) +
     geom_text(aes(y = 500, label = cancer_before_acc_type_other),
@@ -525,3 +525,15 @@ ggarrange(
 dev.off()
 
 
+
+
+# estimates for tables --------------
+comp_cancer_type_other_adj[part == "Moderate-to-vigorous physical activity", .(cancer_before_acc_type_other, estimates_contrast_healthy)]
+comp_cancer_type_other_adj[part == "Light physical activity", .(cancer_before_acc_type_other, estimates_contrast_healthy)]
+comp_cancer_type_other_adj[part == "Sedentary behaviour", .(cancer_before_acc_type_other, estimates_contrast_healthy)]
+comp_cancer_type_other_adj[part == "Sleep period", .(cancer_before_acc_type_other, estimates_contrast_healthy)]
+
+comp_cancer_type_other_adj[part == "Moderate-to-vigorous physical activity", .(cancer_before_acc_type_other, estimates_contrast_others)]
+comp_cancer_type_other_adj[part == "Light physical activity", .(cancer_before_acc_type_other, estimates_contrast_others)]
+comp_cancer_type_other_adj[part == "Sedentary behaviour", .(cancer_before_acc_type_other, estimates_contrast_others)]
+comp_cancer_type_other_adj[part == "Sleep period", .(cancer_before_acc_type_other, estimates_contrast_others)]
