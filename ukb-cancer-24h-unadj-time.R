@@ -1,14 +1,14 @@
-source("ukb-cancer-24h-utils.R")
+source("ukb-cancer-24h-setup.R")
 source(paste0(redir, "ukb_utils.R"))
 # source("ukb-cancer-24h-data.R")
 
 # main model --------
-fit_cancer_time_since_diag_other_unadj <- brmcoda(clr_cancer_acc,
-                                          mvbind(ilr1, ilr2, ilr3) ~ cancer_time_since_diag_other,
-                                          # save_pars = save_pars(all = TRUE),
-                                          warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
-)
-saveRDS(fit_cancer_time_since_diag_other_unadj, paste0(outputdir, "fit_cancer_time_since_diag_other_unadj", ".RDS"))
+# fit_cancer_time_since_diag_other_unadj <- brmcoda(clr_cancer_acc,
+#                                           mvbind(ilr1, ilr2, ilr3) ~ cancer_time_since_diag_other,
+#                                           # save_pars = save_pars(all = TRUE),
+#                                           warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
+# )
+# saveRDS(fit_cancer_time_since_diag_other_unadj, paste0(outputdir, "fit_cancer_time_since_diag_other_unadj", ".RDS"))
 
 # predicted posteriors ------------
 fit_cancer_time_since_diag_other_unadj <- readRDS(paste0(outputdir, "fit_cancer_time_since_diag_other_unadj", ".RDS"))
@@ -328,7 +328,7 @@ comp_cancer_time_since_diag_other_unadj[, estimates_contrast_cancer := paste0(ro
    geom_segment(aes(x = 0, yend = 650), col = "black", linewidth = 0.5) +   
    scale_y_continuous(limits = c(500, 650),
                       breaks = c(500,  650),
-                      name = "Sleep period") +
+                      name = "Sleep period (mins/day)") +
    scale_colour_manual(values = pal_combined) +
    labs(x = "", y = "", colour = "") +
    coord_flip() +
@@ -374,7 +374,7 @@ comp_cancer_time_since_diag_other_unadj[, estimates_contrast_cancer := paste0(ro
     geom_segment(aes(x = 0, yend = 50), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(0, 50),
                        breaks = c(0, 50),
-                       name = "Moderate-to-vigorous physical activity") +
+                       name = "Moderate-to-vigorous physical activity (mins/day)") +
     scale_colour_manual(values = pal_combined) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +
@@ -420,7 +420,7 @@ comp_cancer_time_since_diag_other_unadj[, estimates_contrast_cancer := paste0(ro
     geom_segment(aes(x = 0, yend = 400), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(200, 400),
                        breaks = c(200, 400),
-                       name = "Light physical activity") +
+                       name = "Light physical activity (mins/day)") +
     scale_colour_manual(values = pal_combined) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +
@@ -466,7 +466,7 @@ comp_cancer_time_since_diag_other_unadj[, estimates_contrast_cancer := paste0(ro
     geom_segment(aes(x = 0, yend = 500), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(500, 650),
                        breaks = c(500, 650),
-                       name = "Sedentary") +
+                       name = "Sedentary (mins/day)") +
     scale_colour_manual(values = pal_combined) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +

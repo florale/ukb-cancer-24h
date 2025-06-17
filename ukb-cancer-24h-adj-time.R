@@ -1,16 +1,16 @@
-source("ukb-cancer-24h-utils.R")
+source("ukb-cancer-24h-setup.R")
 source(paste0(redir, "ukb_utils.R"))
 # source("ukb-cancer-24h-data.R")
 
 # main model --------
-fit_cancer_time_since_diag_other_adj <- brmcoda(clr_cancer_acc,
-                                          mvbind(ilr1, ilr2, ilr3) ~ cancer_time_since_diag_other +
-                                            # + other_conds_at_acc +
-                                            s(age_at_acc) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation),
-                                          # save_pars = save_pars(all = TRUE),
-                                          warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
-)
-saveRDS(fit_cancer_time_since_diag_other_adj, paste0(outputdir, "fit_cancer_time_since_diag_other_adj", ".RDS"))
+# fit_cancer_time_since_diag_other_adj <- brmcoda(clr_cancer_acc,
+#                                           mvbind(ilr1, ilr2, ilr3) ~ cancer_time_since_diag_other +
+#                                             # + other_conds_at_acc +
+#                                             s(age_at_acc) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation),
+#                                           # save_pars = save_pars(all = TRUE),
+#                                           warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
+# )
+# saveRDS(fit_cancer_time_since_diag_other_adj, paste0(outputdir, "fit_cancer_time_since_diag_other_adj", ".RDS"))
 
 # predicted posteriors ------------
 fit_cancer_time_since_diag_other_adj <- readRDS(paste0(outputdir, "fit_cancer_time_since_diag_other_adj", ".RDS"))
@@ -104,7 +104,7 @@ pred_cancer_time_since_diag_other_adj <- lapply(pred_cancer_time_since_diag_othe
 })
 
 # assemble back to summarise posteriors
-pred_cancer_time_since_diag_other_adj <- as.data.frame(abind(pred_cancer_time_since_diag_other_adj, along = 1))
+pred_cancer_time_since_diag_other_adj <- as.data.frame(abind::abind(pred_cancer_time_since_diag_other_adj, along = 1))
 pred_cancer_time_since_diag_other_adj <- split(pred_cancer_time_since_diag_other_adj, pred_cancer_time_since_diag_other_adj$cancer_time_since_diag_other)
 
 ## estimated means  ----------------------
@@ -330,7 +330,7 @@ comp_cancer_time_since_diag_other_adj[, estimates_contrast_cancer := paste0(roun
    geom_segment(aes(x = 0, yend = 650), col = "black", linewidth = 0.5) +   
    scale_y_continuous(limits = c(500, 650),
                       breaks = c(500,  650),
-                      name = "Sleep period") +
+                      name = "Sleep period (mins/day)") +
    scale_colour_manual(values = pal_combined) +
    labs(x = "", y = "", colour = "") +
    coord_flip() +
@@ -376,7 +376,7 @@ comp_cancer_time_since_diag_other_adj[, estimates_contrast_cancer := paste0(roun
     geom_segment(aes(x = 0, yend = 40), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(0, 40),
                        breaks = c(0, 40),
-                       name = "Moderate-to-vigorous physical activity") +
+                       name = "Moderate-to-vigorous physical activity (mins/day)") +
     scale_colour_manual(values = pal_combined) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +
@@ -422,7 +422,7 @@ comp_cancer_time_since_diag_other_adj[, estimates_contrast_cancer := paste0(roun
     geom_segment(aes(x = 0, yend = 400), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(200, 400),
                        breaks = c(200, 400),
-                       name = "Light physical activity") +
+                       name = "Light physical activity (mins/day)") +
     scale_colour_manual(values = pal_combined) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +
@@ -468,7 +468,7 @@ comp_cancer_time_since_diag_other_adj[, estimates_contrast_cancer := paste0(roun
     geom_segment(aes(x = 0, yend = 500), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(500, 650),
                        breaks = c(500, 650),
-                       name = "Sedentary") +
+                       name = "Sedentary (mins/day)") +
     scale_colour_manual(values = pal_combined) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +

@@ -2,16 +2,24 @@ source("ukb-cancer-24h-utils.R")
 source(paste0(redir, "ukb_utils.R"))
 source("ukb-cancer-24h-data.R")
 
-d_cancer_acc_desc <- d_cancer_acc[, c("eid", "age", "age_at_acc", "sex", "white", "edu", "working", 
-                                    "smoking", "alcohol", "deprivation", "deprivationg", 
-                                    "cancer_other_before_acc",
-                                    "cancer_time_since_diag_other",
-                                    "cancer_before_acc_type_other", 
-                                    "icd_ii_time_since_lo",
-                                    "icd_not_cancer",
-                                    "sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp",
-                                    "sleep", "mvpa", "lpa", "sb")]
-d_cancer_acc_desc <- d_cancer_acc_desc[complete.cases(d_cancer_acc_desc)]
+# d_cancer_acc_desc <- d_cancer_acc[, c("eid", "age", "age_at_acc", "sex", "white", "edu", "working", 
+#                                     "smoking", "alcohol", "deprivation", "deprivationg", 
+#                                     "cancer_other_before_acc",
+#                                     "cancer_time_since_diag_other",
+#                                     "cancer_before_acc_type_other", 
+#                                     "icd_ii_time_since_lo",
+#                                     "icd_not_cancer",
+#                                     "sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp",
+#                                     "sleep", "mvpa", "lpa", "sb")]
+d_cancer_acc_desc <- d_cancer_acc[complete.cases(d_cancer_acc[, c("eid", "age", "age_at_acc", "sex", "white", "edu", "working", 
+                                                                       "smoking", "alcohol", "deprivation", "deprivationg", 
+                                                                       "cancer_other_before_acc",
+                                                                       "cancer_time_since_diag_other",
+                                                                       "cancer_before_acc_type_other", 
+                                                                       "icd_ii_time_since_lo",
+                                                                       "icd_not_cancer",
+                                                                       "sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp",
+                                                                       "sleep", "mvpa", "lpa", "sb")])]
 nrow(d_cancer_acc_desc)
 
 # exclude bc incidences up to 1y followup
@@ -23,7 +31,7 @@ nrow(d_cancer_acc) - nrow(d_cancer_acc_desc) #93490 - 91352 #2138
 # descriptives ----------------------------
 ## demographics - group by cancer vs healthy
 egltable(c(
-  "age", "age_at_acc", "sex", "white", "edu", "working", 
+  "age", "age_at_acc", "sex", "white", "bmig", "edu", "working", 
   "smoking", "alcohol", "deprivation", "deprivationg", 
   "cancer_other_before_acc",
   "cancer_time_since_diag_other",
@@ -34,7 +42,7 @@ egltable(c(
 strict = FALSE, data = d_cancer_acc_desc)
 
 egltable(c(
-  "age", "age_at_acc", "sex", "white", "edu", "working", 
+  "age", "age_at_acc", "sex", "white", "bmig", "edu", "working", 
   "smoking", "alcohol", "deprivation", "deprivationg", 
   "cancer_other_before_acc",
   "icd_ii_time_since_lo"

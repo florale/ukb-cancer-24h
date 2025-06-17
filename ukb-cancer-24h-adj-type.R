@@ -1,17 +1,16 @@
-source("ukb-cancer-24h-utils.R")
+source("ukb-cancer-24h-setup.R")
 source(paste0(redir, "ukb_utils.R"))
 # source("ukb-cancer-24h-data.R")
-
 # main model --------
-fit_cancer_type_other_adj <- brmcoda(clr_cancer_acc,
-                               mvbind(ilr1, ilr2, ilr3) ~ cancer_before_acc_type_other +
-                                 s(icd_ii_time_since_lo) +
-                                 # other_conds_at_acc +
-                                 s(age_at_acc) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation),
-                               # save_pars = save_pars(all = TRUE),
-                               warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
-)
-saveRDS(fit_cancer_type_other_adj, paste0(outputdir, "fit_cancer_type_other_adj", ".RDS"))
+# fit_cancer_type_other_adj <- brmcoda(clr_cancer_acc,
+#                                mvbind(ilr1, ilr2, ilr3) ~ cancer_before_acc_type_other +
+#                                  s(icd_ii_time_since_lo) +
+#                                  # other_conds_at_acc +
+#                                  s(age_at_acc) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation),
+#                                # save_pars = save_pars(all = TRUE),
+#                                warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
+# )
+# saveRDS(fit_cancer_type_other_adj, paste0(outputdir, "fit_cancer_type_other_adj", ".RDS"))
 
 # predicted posteriors ------------
 fit_cancer_type_other_adj <- readRDS(paste0(outputdir, "fit_cancer_type_other_adj", ".RDS"))
@@ -81,6 +80,8 @@ pred_cancer_type_other_adj <- lapply(pred_cancer_type_other_adj, function(d) {
 # assemble back to summarise posteriors
 pred_cancer_type_other_adj <- as.data.frame(abind(pred_cancer_type_other_adj, along = 1))
 pred_cancer_type_other_adj <- split(pred_cancer_type_other_adj, pred_cancer_type_other_adj$cancer_before_acc_type_other)
+
+# saveRDS(pred_cancer_type_other_adj, paste0(outputdir, "pred_cancer_type_other_adj", ".RDS"))
 
 ## estimated means  ----------------------
 pred_comp_cancer_type_other_adj <- lapply(pred_cancer_type_other_adj, function(l) {
@@ -202,6 +203,27 @@ comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Ot
 comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Other Skin", "3 017", Cases)]
 comp_cancer_type_other_adj[, Cases := ifelse(cancer_before_acc_type_other == "Prostate", "1 116", Cases)]
 
+# survival
+comp_cancer_type_other_adj[, Survival := NA]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Healthy", "", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Cancer", "", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Others", "", Survival)]
+
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Blood", "62%", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Breast", "85%", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Colorectal", "60%", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Endocrine Gland", "88%", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Gastrointestinal Tract", "22%", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Genitourinary", "64%", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Gynaecological", "61%", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Head & Neck", "54%", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Lung", "21%", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Melanoma", "93%", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Multiple Primary", "", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Other Cancer", "", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Other Skin", "", Survival)]
+comp_cancer_type_other_adj[, Survival := ifelse(cancer_before_acc_type_other == "Prostate", "87%", Survival)]
+
 comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Others", "Other Conditions", cancer_before_acc_type_other)]
 comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Other Skin", "   Skin (non-melanoma)", cancer_before_acc_type_other)]
 comp_cancer_type_other_adj[, cancer_before_acc_type_other := ifelse(cancer_before_acc_type_other == "Lung", "   Lung", cancer_before_acc_type_other)]
@@ -289,11 +311,15 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
              hjust = 0, nudge_x = 0, 
              family = "Arial Narrow", size = 3,
              show.legend = FALSE) +
-   geom_text(aes(y = 650, label = TeX(est_sig, output = "character")), parse = TRUE,
+   geom_text(aes(y = 645, label = TeX(est_sig, output = "character")), parse = TRUE,
              hjust = 0.5, nudge_x = 0, 
              family = "Arial Narrow", size = 3,
              show.legend = FALSE) +
-   geom_text(aes(y = 675, label = Cases),
+   geom_text(aes(y = 666, label = Cases),
+             hjust = 1, nudge_x = 0, 
+             family = "Arial Narrow", size = 3,
+             show.legend = FALSE) +
+   geom_text(aes(y = 675, label = Survival),
              hjust = 1, nudge_x = 0, 
              family = "Arial Narrow", size = 3,
              show.legend = FALSE) +
@@ -301,7 +327,7 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
    geom_segment(aes(x = 0, yend = 500), col = "black", linewidth = 0.5) +
    scale_y_continuous(limits = c(500, 675),
                       breaks = c(500, 675),
-                      name = "Sleep period") +
+                      name = "Sleep period  (mins/day)") +
    scale_colour_manual(values = pal_type) +
    labs(x = "", y = "", colour = "") +
    coord_flip() +
@@ -334,11 +360,15 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
               hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_text(aes(y = 33.75, label = TeX(est_sig, output = "character")), parse = TRUE,
+    geom_text(aes(y = 32.85, label = TeX(est_sig, output = "character")), parse = TRUE,
               hjust = 0.5, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_text(aes(y = 40, label = Cases),
+    geom_text(aes(y = 38, label = Cases),
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_text(aes(y = 40, label = Survival),
               hjust = 1, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
@@ -346,7 +376,7 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
     geom_segment(aes(x = 0, yend = 40), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(0, 40),
                        breaks = c(0, 40),
-                       name = "Moderate-to-vigorous physical activity") +
+                       name = "Moderate-to-vigorous physical activity (mins/day)") +
     scale_colour_manual(values = pal_type) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +
@@ -380,11 +410,15 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
               hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_text(aes(y = 371.5, label = TeX(est_sig, output = "character")), parse = TRUE,
+    geom_text(aes(y = 365.5, label = TeX(est_sig, output = "character")), parse = TRUE,
               hjust = 0.5, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_text(aes(y = 400, label = Cases),
+    geom_text(aes(y = 390, label = Cases),
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_text(aes(y = 400, label = Survival),
               hjust = 1, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
@@ -392,7 +426,7 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
     geom_segment(aes(x = 0, yend = 400), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(200, 400),
                        breaks = c(200, 400),
-                       name = "Light physical activity") +
+                       name = "Light physical activity (mins/day)") +
     scale_colour_manual(values = pal_type) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +
@@ -426,11 +460,15 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
               hjust = 0, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_text(aes(y = 650, label = TeX(est_sig, output = "character")), parse = TRUE,
+    geom_text(aes(y = 645, label = TeX(est_sig, output = "character")), parse = TRUE,
               hjust = 0.5, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
-    geom_text(aes(y = 675, label = Cases),
+    geom_text(aes(y = 666, label = Cases),
+              hjust = 1, nudge_x = 0, 
+              family = "Arial Narrow", size = 3,
+              show.legend = FALSE) +
+    geom_text(aes(y = 675, label = Survival),
               hjust = 1, nudge_x = 0, 
               family = "Arial Narrow", size = 3,
               show.legend = FALSE) +
@@ -438,7 +476,7 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
     geom_segment(aes(x = 0, yend = 500), col = "black", linewidth = 0.5) +
     scale_y_continuous(limits = c(500, 675),
                        breaks = c(500, 675),
-                       name = "Sedentary") +
+                       name = "Sedentary (mins/day)") +
     scale_colour_manual(values = pal_type) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +
@@ -494,8 +532,8 @@ comp_cancer_type_other_adj[, estimates_contrast_others := paste0(round(Mean_diff
 # dev.off()
 
 grDevices::cairo_pdf(
-  file = paste0(outputdir, "cancer_type_other_est", ".pdf"),
-  width = 8,
+  file = paste0(outputdir, "cancer_type_other_est_surv_adj", ".pdf"),
+  width = 9,
   height = 14,
 )
 
@@ -509,8 +547,8 @@ ggarrange(
 dev.off()
 
 grDevices::png(
-  file = paste0(outputdir, "cancer_type_other_est", ".png"),
-  width = 8500,
+  file = paste0(outputdir, "cancer_type_other_est_surv_adj", ".png"),
+  width = 9000,
   height = 12000,
   res = 900
 )
