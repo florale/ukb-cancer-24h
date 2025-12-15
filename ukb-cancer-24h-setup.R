@@ -1,9 +1,9 @@
 if (Sys.info()[["user"]] %in% c("florale")) {
   redir <- "/Users/florale/Library/CloudStorage/OneDrive-Personal/github/projects/ukbiobank/"
-  outputdir <- "/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/projects/ukbiobank/ukb-cancer-24h/output/"
+  outputdir <- "/Users/florale/Library/CloudStorage/OneDrive-Personal/monash/papers/ukbiobank/ukb-cancer-24h/output/"
 } else if (Sys.info()[["user"]] %in% c("flee0016")) {
   redir <- "/Users/flee0016/Library/CloudStorage/OneDrive-Personal/github/projects/ukbiobank/"
-  outputdir <- "/Users/flee0016/Library/CloudStorage/OneDrive-Personal/monash/projects/ukbiobank/ukb-cancer-24h/output/"
+  outputdir <- "/Users/flee0016/Library/CloudStorage/OneDrive-Personal/monash/papers/ukbiobank/ukb-cancer-24h/output/"
 }
 
 
@@ -12,8 +12,7 @@ c("#978787", "#BEACA2", "#EFE3E0", "#A1B2C2", "#8399AE")
 # pal_time <- c("#4682b4", "#9c6755", "#f5c98e", "#dfa398")
 
 
-# pal_type <- wes_palette("Cavalcanti1", 15, type = "continuous")
-# pal_type <- wes_palette("Zissou1", 15, type = "continuous")
+# pal_type <- wesanderson::wes_palette("Cavalcanti1", 15, type = "continuous")
 # pal_type <- c("#666666", "#f6e0d2", "#9c6755", "#659794", "#dfa398", "#f5c98e", "#d65b5a", "#586085",
 #               "#6ca9c3", "#d1a391", "#7b906f", "#c0a5aa", "#7083a4", "#ad616c", "#4d3944")
 pal <- c("#708885", "#A9A9A9", "#ba6c6e")
@@ -21,11 +20,42 @@ pal_time <- c("#708885", "#A9A9A9", "#D2A7A7", "#ba6c6e", "#4E2F26")
 pal_combined <- c("#708885", "#A9A9A9", "#4E2F26", "#ba6c6e", "#CA8F90", "#E4C7C7")
 pal_combined <- c("#E4C7C7", "#CA8F90", "#ba6c6e", "#4E2F26", "#A9A9A9", "#708885")
 
+pal_sen <- c(
+
+  # "#EFE3E0", "#A1B2C2", "#8399AE", "#7083a4",
+  "#763C3C", "#944C4C",  "#ba6c6e", "#CA8F90", "#d2a0a1", "#E4C7C7", 
+  "#EAD3BF", "#EEAB96", "#CF9C81", "#c48462", "#978787", "#4E2F26", 
+  "#708885"
+)
+# scales::show_col(wesanderson::wes_palette("Zissou1", 12, type = "continuous"))
+pal_sen <- 
+c(
+  "#3A9AB2", "#6AAFBF", "#8AB8B8", "#9FBFA8",
+  "#B4C58D", "#CDC965", "#DFC131", "#E4AB0C",
+  "#E88F05", "#EC7304", "#EF5102", "#F11B00",
+  "#708885"
+
+)
 pal_type <- c(
-  "#666666", "#586085", "#9D93B9", "#3b3960",
+  "#666666", 
+  "#586085", "#9D93B9", "#3b3960",
   "#4682b4", "#8CAACB", "#4F7375", "#f5c98e",
-  "#EAD3BF", "#9c6755", "#dfa398", "#efcbcb",
-  "#d65b5a", "#944C4C", "#4E2F26", "#A9A9A9",
+  "#EAD3BF", "#9c6755", "#dfa398", "#E2C3C3",
+  "#ba6c6e", "#944C4C", "#4E2F26", "#A9A9A9",
+  "#708885"
+)
+
+pal_type <- c(
+  "#666666", 
+  "#4E2F26", "#944C4C", 
+  "#ba6c6e", "#E2C3C3",
+  "#9c6755", "#dfa398", 
+  "#f5c98e", "#EAD3BF", 
+  "#C1D1E3", 
+  "#8CAACB", "#6A84A7", 
+  "#9D93B9", 
+  "#586085", "#3b3960",
+  "#A9A9A9",
   "#708885"
 )
 
@@ -70,9 +100,17 @@ pal_type <- c(
 # )
 
 pal_type_quantile <- c(
-  "#ad616c",
-  "#635761", "#395b85", "#7083a4", "#8CAACB", "#7b906f", "#659794",
-  "#f5c98e", "#ea967c", "#9c6755", "#dfa398", "#efcbcb", "#ba6c6e", "#d65b5a",
+  "#666666", "#635761", "#395b85", "#7083a4", "#8CAACB", "#7b906f", "#659794",
+  "#f5c98e", "#ea967c", "#9c6755", "#dfa398", "#efcbcb", "#ba6c6e", 
+  # "#d65b5a",
+  "#944C4C", 
+  "#4E2F26", 
+
+  "#9D93B9", 
+  "#586085", "#3b3960",
+  "#708885",
+
+
   "#666666",
   "#ad616c",
   "#635761", "#395b85", "#7083a4", "#8CAACB", "#7b906f", "#659794",
@@ -81,7 +119,7 @@ pal_type_quantile <- c(
   "#ad616c",
   "#635761", "#395b85", "#7083a4", "#8CAACB", "#7b906f", "#659794",
   "#f5c98e", "#ea967c", "#9c6755", "#dfa398", "#efcbcb", "#ba6c6e", "#d65b5a",
-  "#666666"
+  "#708885"
 )
 
 pal_time_quantile <- c(
@@ -155,7 +193,7 @@ pal_time_quantile <- c(
 #   "#ad616c"
 # )
 
-# pal_jco()(10)
+# ggsci::pal_jco()(10)
 # scales::show_col(tvthemes:::brooklyn99_palette$Dark)
 #
 # scales::show_col(tvthemes:::hilda_palette$Day)
