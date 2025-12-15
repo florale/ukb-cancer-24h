@@ -1,5 +1,5 @@
-source("ukb-cancer-24h-utils.R")
-source(paste0(redir, "ukb_utils.R"))
+# source("ukb-cancer-24h-setup.R")
+# source(paste0(redir, "ukb_utils.R"))
 source("ukb-cancer-24h-data.R")
 
 # d_cancer_acc_desc <- d_cancer_acc[, c("eid", "age", "age_at_acc", "sex", "white", "edu", "working", 
@@ -15,6 +15,7 @@ d_cancer_acc_desc <- d_cancer_acc[complete.cases(d_cancer_acc[, c("eid", "age", 
                                                                        "smoking", "alcohol", "deprivation", "deprivationg", 
                                                                        "cancer_other_before_acc",
                                                                        "cancer_time_since_diag_other",
+                                                                       "cancer_time_since_diag_other_f",
                                                                        "cancer_before_acc_type_other", 
                                                                        "icd_ii_time_since_lo",
                                                                        "icd_not_cancer",
@@ -32,7 +33,7 @@ nrow(d_cancer_acc) - nrow(d_cancer_acc_desc) #93490 - 91352 #2138
 ## demographics - group by cancer vs healthy
 egltable(c(
   "age", "age_at_acc", "sex", "white", "bmig", "edu", "working", 
-  "smoking", "alcohol", "deprivation", "deprivationg", 
+  "smoking", "alcohol", "deprivation", "deprivationg", "season",
   "cancer_other_before_acc",
   "cancer_time_since_diag_other",
   "cancer_before_acc_type_other", 
@@ -55,6 +56,12 @@ egltable(c(
   "sleep", "mvpa", "lpa", "sb" # raw
 ), strict = FALSE, g = "cancer_other_before_acc", data = d_cancer_acc_desc)
 
+# number of zeros in raw data
+d_cancer_acc_desc[
+  , sum(rowSums(.SD == 0) > 0),
+  .SDcols = c("sleep", "mvpa", "lpa", "sb")
+]
+
 # ## main variables - group by cancer types
 # egltable(c(
 #   "sleep_comp", "mvpa_comp", "lpa_comp", "sb_comp", #acomp and 0 imputed
@@ -72,6 +79,33 @@ strict = FALSE, data = d_cancer_acc_desc[cancer_other_before_acc %nin% c("Health
 
 #  median time since cancer diag by types 
 psych::describeBy(d_cancer_acc_desc$icd_ii_time_since_lo, group = d_cancer_acc_desc$cancer_before_acc_type_other)
+
+# number by time since diag and type
+all_cancer <- 91352 - 13722 - 67478  # 10152
+d_cancer_acc_desc[, .N,
+  by = .(cancer_before_acc_type_other, cancer_time_since_diag_other)][
+    order(cancer_before_acc_type_other, cancer_time_since_diag_other)]
+
+print(
+  d_cancer_acc_desc[
+    , .N,
+    by = .(cancer_before_acc_type_other, cancer_time_since_diag_other)
+  ][
+    , perc_total := round(100 * N / all_cancer, 2)
+  ][
+  , `N(%)` := sprintf("%d (%.2f%%)", N, perc_total)
+][
+    order(
+      cancer_before_acc_type_other,
+      relevel(cancer_time_since_diag_other,
+        levels = 
+         "1-5 years since diagnosis",
+        "Less than 1 year since diagnosis",
+        "More than 5 years since diagnosis"
+      )
+    )
+  ]
+)
 
 # number of other conditions
 d_acc_icd_health <- readRDS(paste0(inputdir, "d_acc_icd_health", ".RDS"))
@@ -95,6 +129,29 @@ table(d_acc_icd_health$icd_ii_at_acc_other, useNA = "always")
 d_cancer_acc_desc <- merge(d_cancer_acc_desc, d_acc_icd_health[, .(eid, icd_ii_at_acc_other, icd_not_cancer_n)], by = "eid", all.x = TRUE)
 psych::describeBy(d_cancer_acc_desc$icd_not_cancer_n, group = d_cancer_acc_desc$icd_ii_at_acc_other)
 # psych::describeBy(d_acc_icd_health$icd_not_cancer_n, group = d_acc_icd_health$icd_ii_at_acc_other)
+
+# Frequencies: number of non-cancer ICDs by ICD II at accession
+# This produces counts and % within each icd_ii_at_acc_other group
+freq_icd_not_by_icd_ii <- d_cancer_acc_desc[
+  , .N, by = .(icd_ii_at_acc_other, icd_not_cancer_n)
+][order(icd_ii_at_acc_other, icd_not_cancer_n)]
+freq_icd_not_by_icd_ii[, perc := round(100 * N / sum(N), 2), by = icd_ii_at_acc_other]
+freq_icd_not_by_icd_ii[, `N(%)` := sprintf("%d (%.2f%%)", N, perc)]
+print(freq_icd_not_by_icd_ii)
+
+# Group counts of icd_not_cancer_n: collapse 5 and above into a single '5+' group
+# Creates `icd_not_cancer_n_grp` and produces a frequency table by that grouped variable
+d_cancer_acc_desc[, icd_not_cancer_n_grp := ifelse(is.na(icd_not_cancer_n), NA, 
+                                                   ifelse(icd_not_cancer_n >= 5, "5+", as.character(icd_not_cancer_n)))]
+# ensure ordering 0,1,2,3,4,5+
+d_cancer_acc_desc[, icd_not_cancer_n_grp := factor(icd_not_cancer_n_grp, levels = c(as.character(0:4), "5+"))]
+
+freq_icd_not_by_icd_ii_grp <- d_cancer_acc_desc[
+  , .N, by = .(icd_ii_at_acc_other, icd_not_cancer_n_grp)
+][order(icd_ii_at_acc_other, icd_not_cancer_n_grp)]
+freq_icd_not_by_icd_ii_grp[, perc := round(100 * N / sum(N), 2), by = icd_ii_at_acc_other]
+freq_icd_not_by_icd_ii_grp[, `N(%)` := sprintf("%d (%.2f%%)", N, perc)]
+print(freq_icd_not_by_icd_ii_grp)
 
 # other cond
 d_cancer_acc_desc[, other_conds_at_acc := ifelse(cancer_other_before_acc == "Healthy", 0, icd_not_cancer)]

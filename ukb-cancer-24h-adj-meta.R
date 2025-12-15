@@ -122,30 +122,3 @@ plot(fit_meta_cancer_sleep)
 plot(fit_meta_cancer_mvpa)
 plot(fit_meta_cancer_lpa)
 plot(fit_meta_cancer_sb)
-
-set.seed(13)
-result <- list()
-for(i in 1:1000){
-  boot.d <- meta_comp_cancer_type_other_adj[sample(1:nrow(meta_comp_cancer_type_other_adj), nrow(meta_comp_cancer_type_other_adj), replace = TRUE),]
-  boot.m.mvpa <- try(suppressWarnings(metafor::rma(yi = mvpa_est, sei = mvpa_se, mods = ~ survival, data = boot.d)), silent=TRUE)
-  boot.m.lpa <- try(suppressWarnings(metafor::rma(yi = lpa_est, sei = lpa_se, mods = ~ survival, data = boot.d)), silent=TRUE)
-  boot.m.sb <- try(suppressWarnings(metafor::rma(yi = sb_est, sei = sb_se, mods = ~ survival, data = boot.d)), silent=TRUE)
-  boot.m.sleep <- try(suppressWarnings(metafor::rma(yi = sleep_est, sei = sleep_se, mods = ~ survival, data = boot.d)), silent=TRUE)
-  
-  if (inherits(boot.m.mvpa, "try-error") | 
-      inherits(boot.m.lpa, "try-error") | 
-      inherits(boot.m.sb, "try-error") | 
-      inherits(boot.m.sleep, "try-error")) {
-    result[[i]] <- c(NA, NA, NA, NA)
-  } else {
-    result[[i]] <- c(boot.m.mvpa$R2, boot.m.lpa$R2, boot.m.sb$R2, boot.m.sleep$R2)
-  }
-}
-result <- do.call(rbind, result)
-result <- result[complete.cases(result), ]
-colnames(result) <- c("mvpa", "lpa", "sb", "sleep")
-
-# apply quantile to each column
-apply(result, 2, function(x) quantile(x, probs = c(0.025, 0.975)))
-apply(result, 2, mean)
-
