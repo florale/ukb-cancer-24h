@@ -1,14 +1,14 @@
 source("ukb-cancer-24h-setup.R")
 source(paste0(redir, "ukb_utils.R"))
-# source("ukb-cancer-24h-data.R")
+source("ukb-cancer-24h-data.R")
 
-# main model --------
-# fit_cancer_time_since_diag_other_unadj <- brmcoda(clr_cancer_acc,
-#                                           mvbind(ilr1, ilr2, ilr3) ~ cancer_time_since_diag_other,
-#                                           # save_pars = save_pars(all = TRUE),
-#                                           warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
-# )
-# saveRDS(fit_cancer_time_since_diag_other_unadj, paste0(outputdir, "fit_cancer_time_since_diag_other_unadj", ".RDS"))
+## main model --------
+fit_cancer_time_since_diag_other_unadj <- brmcoda(clr_cancer_acc,
+                                          mvbind(z1_1, z2_1, z3_1) ~ cancer_time_since_diag_other,
+                                          # save_pars = save_pars(all = TRUE),
+                                          warmup = 500, chains = 4, cores = 4, backend = "cmdstanr"
+)
+saveRDS(fit_cancer_time_since_diag_other_unadj, paste0(outputdir, "fit_cancer_time_since_diag_other_unadj", ".RDS"))
 
 # predicted posteriors ------------
 fit_cancer_time_since_diag_other_unadj <- readRDS(paste0(outputdir, "fit_cancer_time_since_diag_other_unadj", ".RDS"))
@@ -25,46 +25,45 @@ pred_cancer_time_since_diag_other_unadj <- apply(pred_cancer_time_since_diag_oth
 pred_cancer_time_since_diag_other_unadj <- lapply(pred_cancer_time_since_diag_other_unadj, function(d) {
   
   parts <- c("sleep", "mvpa", "lpa", "sb")
-  parts0 <- c("V1", "V2", "V3", "V4")
+  parts0 <- c("tsleep_comp", "tmvpa_comp", "tlpa_comp", "tsb_comp")
   
   d <- as.data.table(d)
   
-  d[, cancer_weight := sum(.wgt.), by = cancer_time_since_diag_other]
-  d[, denominator := sum(cancer_weight)]
-  d[, cancer_denominator := denominator - 
-      (d[cancer_time_since_diag_other == "Others"]$cancer_weight[[1]])*nrow(d[cancer_time_since_diag_other == "Others"]) - 
-      (d[cancer_time_since_diag_other == "Healthy"]$cancer_weight[[1]])*nrow(d[cancer_time_since_diag_other == "Healthy"])]
-  
-  d[, (parts) := lapply(.SD, mean), by = cancer_time_since_diag_other, .SDcols =  parts0]
-  
-  d[, sleep_weighted := ifelse(cancer_time_since_diag_other %nin% c("Others", "Healthy"), sleep*(cancer_weight/cancer_denominator), NA)]
-  d[, mvpa_weighted := ifelse(cancer_time_since_diag_other %nin% c("Others", "Healthy"), mvpa*(cancer_weight/cancer_denominator), NA)]
-  d[, lpa_weighted := ifelse(cancer_time_since_diag_other %nin% c("Others", "Healthy"), lpa*(cancer_weight/cancer_denominator), NA)]
-  d[, sb_weighted := ifelse(cancer_time_since_diag_other %nin% c("Others", "Healthy"), sb*(cancer_weight/cancer_denominator), NA)]
-  
-  d[, (paste0(parts, "_cancer")) := lapply(.SD, sum, na.rm = TRUE), .SDcols = paste0(parts, "_weighted")]
+  d[, (paste0(parts)) :=
+        lapply(.SD, function(x)
+          weighted.mean(x, .wgt.)),
+        .SDcols = parts0, by = cancer_time_since_diag_other]
+
+  d[, cancer_wgt := sum(.wgt.), by = cancer_time_since_diag_other]
+
+  d[cancer_time_since_diag_other %nin% c("Healthy", "Others"), (paste0(parts, "_cancer")) := lapply(.SD, function(x) weighted.mean(x, cancer_wgt)), .SDcols = paste0(parts)]
   
   d <- rbind(d, 
              data.table(cancer_time_since_diag_other = "Cancer"),
              fill = TRUE
   )
-  
-  d[cancer_time_since_diag_other == "Cancer", sleep := d$sleep_cancer[[1]]]
-  d[cancer_time_since_diag_other == "Cancer", mvpa := d$mvpa_cancer[[1]]]
-  d[cancer_time_since_diag_other == "Cancer", lpa := d$lpa_cancer[[1]]]
-  d[cancer_time_since_diag_other == "Cancer", sb := d$sb_cancer[[1]]]
-  
-  # contrast vs healthy
-  d[, sleep_vs_healthy := sleep - d[cancer_time_since_diag_other == "Healthy"]$sleep]
-  d[, mvpa_vs_healthy := mvpa - d[cancer_time_since_diag_other == "Healthy"]$mvpa]
-  d[, lpa_vs_healthy := lpa - d[cancer_time_since_diag_other == "Healthy"]$lpa]
-  d[, sb_vs_healthy := sb - d[cancer_time_since_diag_other == "Healthy"]$sb]
+
+  d[cancer_time_since_diag_other == "Cancer", (parts) := d[cancer_time_since_diag_other %nin% c("Healthy", "Others"),
+   lapply(.SD, function(x) unique(na.omit(x))),
+   .SDcols = paste0(parts, "_cancer")
+  ]]
+
+  d[, (paste0(parts, "_vs_healthy")) :=
+   Map(`-`, .SD, d[cancer_time_since_diag_other == "Healthy",
+    .SD,
+    .SDcols = parts
+   ][1]),
+  .SDcols = parts
+  ]
   
   # contrast vs others
-  d[, sleep_vs_others := sleep - d[cancer_time_since_diag_other == "Others"]$sleep]
-  d[, mvpa_vs_others := mvpa - d[cancer_time_since_diag_other == "Others"]$mvpa]
-  d[, lpa_vs_others := lpa - d[cancer_time_since_diag_other == "Others"]$lpa]
-  d[, sb_vs_others := sb - d[cancer_time_since_diag_other == "Others"]$sb]
+  d[, (paste0(parts, "_vs_others")) :=
+   Map(`-`, .SD, d[cancer_time_since_diag_other == "Others",
+    .SD,
+    .SDcols = parts
+   ][1]),
+  .SDcols = parts
+  ]
   
   # pairwise contrast within cancer 
   d[, sleep_lessthan1_vs_1to5 := d[cancer_time_since_diag_other == "1-5 years since diagnosis"]$sleep[1] - d[cancer_time_since_diag_other == "Less than 1 year since diagnosis"]$sleep[1]]
@@ -299,194 +298,100 @@ comp_cancer_time_since_diag_other_unadj[, est_sig := paste0(estimates, " ", sig_
 # comp_cancer_time_since_diag_other_unadj[, est_sig := paste0(estimates, " ", str_replace_na(sig_ref_healthy, " "), str_replace_na(sig_ref_others, " "), str_replace_na(sig_ref_cancer, " "))]
 
 # for tables
-comp_cancer_time_since_diag_other_unadj[, estimates_contrast_healthy := paste0(round(Mean_diff_ref_healthy, 2), "[", round(CI_low_diff_ref_healthy, 2), ", ", round(CI_high_diff_ref_healthy, 2), "]")]
-comp_cancer_time_since_diag_other_unadj[, estimates_contrast_others := paste0(round(Mean_diff_ref_others, 2), "[", round(CI_low_diff_ref_others, 2), ", ", round(CI_high_diff_ref_others, 2), "]")]
-comp_cancer_time_since_diag_other_unadj[, estimates_contrast_cancer := paste0(round(Mean_diff_ref_cancer, 2), "[", round(CI_low_diff_ref_cancer, 2), ", ", round(CI_high_diff_ref_cancer, 2), "]")]
+comp_cancer_time_since_diag_other_unadj[, estimates_contrast_healthy := paste0(format(round(Mean_diff_ref_healthy, 1)), " [", format(round(CI_low_diff_ref_healthy, 1)), ", ", format(round(CI_high_diff_ref_healthy, 1)), "]")]
+comp_cancer_time_since_diag_other_unadj[, estimates_contrast_others := paste0(format(round(Mean_diff_ref_others, 1)), " [", format(round(CI_low_diff_ref_others, 1)), ", ", format(round(CI_high_diff_ref_others, 1)), "]")]
+comp_cancer_time_since_diag_other_unadj[, estimates_contrast_cancer := paste0(format(round(Mean_diff_ref_cancer, 1)), " [", format(round(CI_low_diff_ref_cancer, 1)), ", ", format(round(CI_high_diff_ref_cancer, 1)), "]")]
 
 ## plot -----------------------
-(plot_comp_cancer_time_since_diag_other_sleep_unadj <- 
-   ggplot(comp_cancer_time_since_diag_other_unadj[part == "Sleep period"], aes(x = cancer_time_since_diag_other, y = Mean)) +
-   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
-   geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#F2F2F2", alpha = 0.2) + 
-   geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
-   geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#A9A9A9") +
-   geom_pointrange(aes(ymin = CI_low,
-                       ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
-   geom_text(aes(y = 500, label = cancer_time_since_diag_other),
-             hjust = 0, nudge_x = 0, 
-             family = "Arial Narrow", size = 3,
-             show.legend = FALSE) +
-   geom_text(aes(y = 627.5, label = TeX(est_sig, output = "character")), parse = TRUE,
-             hjust = 0.5, nudge_x = 0, 
-             family = "Arial Narrow", size = 3,
-             show.legend = FALSE) +
-   geom_text(aes(y = 650, label = Cases),
-             hjust = 1, nudge_x = 0, 
-             family = "Arial Narrow", size = 3,
-             show.legend = FALSE) +
-   geom_segment(aes(x = 0, yend = 500), col = "black", linewidth = 0.5) +
-   geom_segment(aes(x = 0, yend = 650), col = "black", linewidth = 0.5) +   
-   scale_y_continuous(limits = c(500, 650),
-                      breaks = c(500,  650),
-                      name = "Sleep period (mins/day)") +
-   scale_colour_manual(values = pal_combined) +
-   labs(x = "", y = "", colour = "") +
-   coord_flip() +
-   theme_ipsum() +
-   theme(
-     axis.ticks          = element_blank(),
-     # panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
-     plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
-     panel.grid.major    = element_blank(),
-     panel.grid.minor    = element_blank(),
-     # axis.line.x         = element_line(linewidth = 0.5, colour = "black"),
-     axis.title.x        = element_text(size = 10, face = "bold", hjust = .5),
-     axis.text.x         = element_text(size = 9),
-     axis.text.y         = element_blank(),
-     strip.text          = element_text(size = 9, hjust = .5, face = "bold"),
-     legend.text         = element_text(size = 10, face = "bold", hjust = .5),
-     legend.position     = "none",
-     plot.margin         = unit(c(0.5,0,1,0), "lines")
-   )
+plot_specs <- data.table(
+ part = c(
+  "Sleep period",
+  "Moderate-to-vigorous physical activity",
+  "Light physical activity",
+  "Sedentary behaviour"
+ ),
+ ymin = c(500, 0, 200, 500),
+ ymax = c(650, 50, 400, 650),
+ ysig = c(627.5, 43, 370, 627.5),
+ pal = list(pal_combined, pal_combined, pal_combined, pal_combined),
+ text_y = c(500, 0, 200, 500),
+ seg_y = list(c(500, 650), c(0, 50), c(200, 400), c(500, 650)),
+ ycase  = c(650, 50, 400, 650),
+ ylab = c(
+  "Sleep period (min/day)",
+  "Moderate-to-vigorous physical activity (min/day)",
+  "Light physical activity (min/day)",
+  "Sedentary behaviour (min/day)"
+ )
 )
 
-(plot_comp_cancer_time_since_diag_other_mvpa_unadj <- 
-    ggplot(comp_cancer_time_since_diag_other_unadj[part == "Moderate-to-vigorous physical activity"], aes(x = cancer_time_since_diag_other, y = Mean)) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#F2F2F2", alpha = 0.2) + 
-    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
-    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#A9A9A9") +
-    geom_pointrange(aes(ymin = CI_low,
-                        ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
-    geom_text(aes(y = 0, label = cancer_time_since_diag_other),
-              hjust = 0, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_text(aes(y = 42, label = TeX(est_sig, output = "character")), parse = TRUE,
-              hjust = 0.5, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_text(aes(y = 50, label = Cases),
-              hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_segment(aes(x = 0, yend = 0), col = "black", linewidth = 0.5) +
-    geom_segment(aes(x = 0, yend = 50), col = "black", linewidth = 0.5) +
-    scale_y_continuous(limits = c(0, 50),
-                       breaks = c(0, 50),
-                       name = "Moderate-to-vigorous physical activity (mins/day)") +
-    scale_colour_manual(values = pal_combined) +
+plot_list <- lapply(seq_len(nrow(plot_specs)), function(i) {
+ spec <- plot_specs[i]
+ seg_vals <- spec$seg_y[[1]]
+
+  data_i   <- comp_cancer_time_since_diag_other_unadj[part == spec$part]
+
+  ggplot(data_i, aes(x = cancer_time_since_diag_other, y = Mean)) +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others),
+              fill = "#F2F2F2", alpha = 0.2) +
+    geom_hline(aes(yintercept = yintercept_others),
+               linewidth = 0.5, linetype = "dashed", colour = "#A9A9A9") +
+    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy),
+              fill = "#A9B4AE", alpha = 0.075) + ## CAD4CF
+    geom_hline(aes(yintercept = yintercept_healthy),
+               linewidth = 0.5, linetype = "dashed", colour = "#708885") +
+
+    geom_pointrange(aes(ymin = CI_low, ymax = CI_high, colour = cancer_time_since_diag_other),
+                    size = 0.25, linewidth = 0.5) +
+    geom_text(aes(y = spec$text_y, label = cancer_time_since_diag_other),
+              hjust = 0, nudge_x = 0, family = "Arial Narrow", size = 3, show.legend = FALSE) +
+    geom_text(aes(y = spec$ysig, label = TeX(est_sig, output = "character")),
+              parse = TRUE, hjust = 0.5, family = "Arial Narrow", size = 3, show.legend = FALSE) +
+    geom_text(aes(y = spec$ycase, label = Cases),
+              hjust = 1, nudge_x = 0, family = "Arial Narrow", size = 3, show.legend = FALSE) +
+    # annotate("segment",
+    #          x = 0.5,
+    #          xend = length(unique(data_i$cancer_time_since_diag_other)) + 0.5,
+    #          y = seg_vals[1],
+    #          yend = seg_vals[1],
+    #          linewidth = 0.5) +
+    # annotate("segment",
+    #          x = 0.5,
+    #          xend = length(unique(data_i$cancer_time_since_diag_other)) + 0.5,
+    #          y = seg_vals[2],
+    #          yend = seg_vals[2],
+    #          linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = seg_vals[1]), col = "black", linewidth = 0.5) +
+    geom_segment(aes(x = 0, yend = seg_vals[2]), col = "black", linewidth = 0.5) +
+    scale_y_continuous(
+   limits = c(spec$ymin, spec$ymax),
+   breaks = c(spec$ymin, spec$ymax),
+   name = spec$ylab
+  ) +
+    scale_colour_manual(values = spec$pal[[1]]) +
     labs(x = "", y = "", colour = "") +
     coord_flip() +
     theme_ipsum() +
     theme(
-      axis.ticks          = element_blank(),
-      # panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
-      plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
-      panel.grid.major    = element_blank(),
-      panel.grid.minor    = element_blank(),
-      # axis.line.x         = element_line(linewidth = 0.5, colour = "black"),
-      axis.title.x        = element_text(size = 10, face = "bold", hjust = .5),
-      axis.text.x         = element_text(size = 9),
-      axis.text.y         = element_blank(),
-      strip.text          = element_text(size = 9, hjust = .5, face = "bold"),
-      legend.text         = element_text(size = 10, face = "bold", hjust = .5),
-      legend.position     = "none",
-      plot.margin         = unit(c(0.5,0,1,0), "lines")
+      axis.ticks      = element_blank(),
+      plot.background = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
+      panel.grid.major= element_blank(),
+      panel.grid.minor= element_blank(),
+      axis.title.x    = element_text(size = 9, face = "bold", hjust = .5, margin = margin(t = -9)),
+      axis.text.x     = element_text(size = 9),
+      axis.text.y     = element_blank(),
+      strip.text      = element_text(size = 9, hjust = .5, face = "bold"),
+      legend.text     = element_text(size = 9, face = "bold", hjust = .5),
+      legend.position = "none",
+      plot.margin     = unit(c(0.5, 0, 1, 0), "lines")
     )
-)
+})
 
-(plot_comp_cancer_time_since_diag_other_lpa_unadj <- 
-    ggplot(comp_cancer_time_since_diag_other_unadj[part == "Light physical activity"], aes(x = cancer_time_since_diag_other, y = Mean)) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#F2F2F2", alpha = 0.2) + 
-    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
-    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#A9A9A9") +
-    geom_pointrange(aes(ymin = CI_low,
-                        ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
-    geom_text(aes(y = 200, label = cancer_time_since_diag_other),
-              hjust = 0, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_text(aes(y = 371.5, label = TeX(est_sig, output = "character")), parse = TRUE,
-              hjust = 0.5, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_text(aes(y = 400, label = Cases),
-              hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_segment(aes(x = 0, yend = 200), col = "black", linewidth = 0.5) +
-    geom_segment(aes(x = 0, yend = 400), col = "black", linewidth = 0.5) +
-    scale_y_continuous(limits = c(200, 400),
-                       breaks = c(200, 400),
-                       name = "Light physical activity (mins/day)") +
-    scale_colour_manual(values = pal_combined) +
-    labs(x = "", y = "", colour = "") +
-    coord_flip() +
-    theme_ipsum() +
-    theme(
-      axis.ticks          = element_blank(),
-      # panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
-      plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
-      panel.grid.major    = element_blank(),
-      panel.grid.minor    = element_blank(),
-      # axis.line.x         = element_line(linewidth = 0.5, colour = "black"),
-      axis.title.x        = element_text(size = 10, face = "bold", hjust = .5),
-      axis.text.x         = element_text(size = 9),
-      axis.text.y         = element_blank(),
-      strip.text          = element_text(size = 9, hjust = .5, face = "bold"),
-      legend.text         = element_text(size = 10, face = "bold", hjust = .5),
-      legend.position     = "none",
-      plot.margin         = unit(c(0.5,0,1,0), "lines")
-    )
-)
-
-(plot_comp_cancer_time_since_diag_other_sb_unadj <- 
-    ggplot(comp_cancer_time_since_diag_other_unadj[part == "Sedentary behaviour"], aes(x = cancer_time_since_diag_other, y = Mean)) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_healthy, ymax = ci_high_healthy), fill = "#CBD5D0", alpha = 0.1) +
-    geom_rect(aes(xmin = -Inf, xmax = Inf, ymin = ci_low_others, ymax = ci_high_others), fill = "#F2F2F2", alpha = 0.2) +
-    geom_hline(aes(yintercept = yintercept_healthy), linewidth = 0.5, linetype= "dashed", colour = "#708885") +
-    geom_hline(aes(yintercept = yintercept_others), linewidth = 0.5, linetype= "dashed", colour = "#A9A9A9") +
-    geom_pointrange(aes(ymin = CI_low,
-                        ymax = CI_high, colour = cancer_time_since_diag_other), size = 0.25, linewidth = 0.5) +
-    geom_text(aes(y = 500, label = cancer_time_since_diag_other),
-              hjust = 0, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_text(aes(y = 627.5, label = TeX(est_sig, output = "character")), parse = TRUE,
-              hjust = 0.5, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_text(aes(y = 650, label = Cases),
-              hjust = 1, nudge_x = 0, 
-              family = "Arial Narrow", size = 3,
-              show.legend = FALSE) +
-    geom_segment(aes(x = 0, yend = 650), col = "black", linewidth = 0.5) +
-    geom_segment(aes(x = 0, yend = 500), col = "black", linewidth = 0.5) +
-    scale_y_continuous(limits = c(500, 650),
-                       breaks = c(500, 650),
-                       name = "Sedentary (mins/day)") +
-    scale_colour_manual(values = pal_combined) +
-    labs(x = "", y = "", colour = "") +
-    coord_flip() +
-    theme_ipsum() +
-    theme(
-      axis.ticks          = element_blank(),
-      # panel.background    = element_rect(fill = "transparent", colour = "black", linewidth = 0.5),
-      plot.background     = element_rect(fill = "transparent", colour = NA, linewidth = 0.5),
-      panel.grid.major    = element_blank(),
-      panel.grid.minor    = element_blank(),
-      # axis.line.x         = element_line(linewidth = 0.5, colour = "black"),
-      axis.title.x        = element_text(size = 10, face = "bold", hjust = .5),
-      axis.text.x         = element_text(size = 9),
-      axis.text.y         = element_blank(),
-      strip.text          = element_text(size = 9, hjust = .5, face = "bold"),
-      legend.text         = element_text(size = 10, face = "bold", hjust = .5),
-      legend.position     = "none",
-      plot.margin         = unit(c(0.5,0,1,0), "lines")
-    )
-)
+names(plot_list) <- tolower(gsub(" ", "_", plot_specs$part))
+plot_comp_cancer_time_since_diag_other_sleep_unadj <- plot_list[["sleep_period"]]
+plot_comp_cancer_time_since_diag_other_mvpa_unadj  <- plot_list[["moderate-to-vigorous_physical_activity"]]
+plot_comp_cancer_time_since_diag_other_lpa_unadj   <- plot_list[["light_physical_activity"]]
+plot_comp_cancer_time_since_diag_other_sb_unadj    <- plot_list[["sedentary_behaviour"]]
 
 grDevices::cairo_pdf(
   file = paste0(outputdir, "cancer_time_since_diag_other_est_unadj", ".pdf"),
