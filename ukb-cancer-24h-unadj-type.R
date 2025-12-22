@@ -399,12 +399,12 @@ ggarrange(
 dev.off()
 
 # estimates for tables --------------
-comp_cancer_type_other_unadj[part == "Moderate-to-vigorous physical activity", .(cancer_before_acc_type_other, estimates_contrast_healthy)]
-comp_cancer_type_other_unadj[part == "Light physical activity", .(cancer_before_acc_type_other, estimates_contrast_healthy)]
-comp_cancer_type_other_unadj[part == "Sedentary behaviour", .(cancer_before_acc_type_other, estimates_contrast_healthy)]
-comp_cancer_type_other_unadj[part == "Sleep period", .(cancer_before_acc_type_other, estimates_contrast_healthy)]
+comp_cancer_type_other_unadj[part == "Moderate-to-vigorous physical activity", .(cancer_before_acc_type_other, estimates_contrast_healthy)][order(-cancer_before_acc_type_other)]
+comp_cancer_type_other_unadj[part == "Light physical activity", .(cancer_before_acc_type_other, estimates_contrast_healthy)][order(-cancer_before_acc_type_other)]
+comp_cancer_type_other_unadj[part == "Sedentary behaviour", .(cancer_before_acc_type_other, estimates_contrast_healthy)][order(-cancer_before_acc_type_other)]
+comp_cancer_type_other_unadj[part == "Sleep period", .(cancer_before_acc_type_other, estimates_contrast_healthy)][order(-cancer_before_acc_type_other)]
 
-comp_cancer_type_other_unadj[part == "Moderate-to-vigorous physical activity", .(cancer_before_acc_type_other, estimates_contrast_others)]
-comp_cancer_type_other_unadj[part == "Light physical activity", .(cancer_before_acc_type_other, estimates_contrast_others)]
-comp_cancer_type_other_unadj[part == "Sedentary behaviour", .(cancer_before_acc_type_other, estimates_contrast_others)]
-comp_cancer_type_other_unadj[part == "Sleep period", .(cancer_before_acc_type_other, estimates_contrast_others)]
+comp_cancer_type_other_unadj[part == "Moderate-to-vigorous physical activity", .(cancer_before_acc_type_other, estimates_contrast_others)][order(-cancer_before_acc_type_other)]
+comp_cancer_type_other_unadj[part == "Light physical activity", .(cancer_before_acc_type_other, estimates_contrast_others)][order(-cancer_before_acc_type_other)]
+comp_cancer_type_other_unadj[part == "Sedentary behaviour", .(cancer_before_acc_type_other, estimates_contrast_others)][order(-cancer_before_acc_type_other)]
+comp_cancer_type_other_unadj[part == "Sleep period", .(cancer_before_acc_type_other, estimates_contrast_others)][order(-cancer_before_acc_type_other)]

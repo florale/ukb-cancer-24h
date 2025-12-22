@@ -130,8 +130,7 @@ d_cancer_acc_desc <- merge(d_cancer_acc_desc, d_acc_icd_health[, .(eid, icd_ii_a
 psych::describeBy(d_cancer_acc_desc$icd_not_cancer_n, group = d_cancer_acc_desc$icd_ii_at_acc_other)
 # psych::describeBy(d_acc_icd_health$icd_not_cancer_n, group = d_acc_icd_health$icd_ii_at_acc_other)
 
-# Frequencies: number of non-cancer ICDs by ICD II at accession
-# This produces counts and % within each icd_ii_at_acc_other group
+# counts and % within each icd_ii_at_acc_other group
 freq_icd_not_by_icd_ii <- d_cancer_acc_desc[
   , .N, by = .(icd_ii_at_acc_other, icd_not_cancer_n)
 ][order(icd_ii_at_acc_other, icd_not_cancer_n)]
@@ -139,10 +138,8 @@ freq_icd_not_by_icd_ii[, perc := round(100 * N / sum(N), 2), by = icd_ii_at_acc_
 freq_icd_not_by_icd_ii[, `N(%)` := sprintf("%d (%.2f%%)", N, perc)]
 print(freq_icd_not_by_icd_ii)
 
-# Group counts of icd_not_cancer_n: collapse 5 and above into a single '5+' group
-# Creates `icd_not_cancer_n_grp` and produces a frequency table by that grouped variable
-d_cancer_acc_desc[, icd_not_cancer_n_grp := ifelse(is.na(icd_not_cancer_n), NA, 
-                                                   ifelse(icd_not_cancer_n >= 5, "5+", as.character(icd_not_cancer_n)))]
+# counts of icd_not_cancer_n: collapse 5 and above into a single '5+' group
+d_cancer_acc_desc[, icd_not_cancer_n_grp := ifelse(is.na(icd_not_cancer_n), NA, ifelse(icd_not_cancer_n >= 5, "5+", as.character(icd_not_cancer_n)))]
 # ensure ordering 0,1,2,3,4,5+
 d_cancer_acc_desc[, icd_not_cancer_n_grp := factor(icd_not_cancer_n_grp, levels = c(as.character(0:4), "5+"))]
 
@@ -158,6 +155,22 @@ d_cancer_acc_desc[, other_conds_at_acc := ifelse(cancer_other_before_acc == "Hea
 table(d_cancer_acc_desc$other_conds_at_acc, useNA = "always")
 
 75859 - 66403
+
+# check types in multiple types
+cancer_types <- c("gynaecological", "genitourinary", "headneck", "lung", "colorectal", 
+                  "gastrointestinal", "breast", "prostate", "blood", "melanoma", "skin", "endocrine", "other")
+multi_primary_total <- nrow(d_cancer_acc[cancer_before_acc_type == "Multiple Primary"])
+counts <- sapply(cancer_types, function(type) {
+  nrow(d_cancer_acc[cancer_before_acc_type == "Multiple Primary" & get(paste0("icd_ii_", type)) == 1])
+})
+data.frame(type = cancer_types, count = counts, percentage = round(100 * counts / multi_primary_total, 2))
+
+counts_skin <- sapply(cancer_types, function(type) {
+  nrow(d_cancer_acc[cancer_before_acc_type == "Multiple Primary" & icd_ii_skin == 1 & get(paste0("icd_ii_", type)) == 1])
+})
+(counts_prostate <- sapply(cancer_types, function(type) {
+  nrow(d_cancer_acc[cancer_before_acc_type == "Multiple Primary" & icd_ii_prostate == 1 & get(paste0("icd_ii_", type)) == 1])
+}))
 
 # dag -------------------
 coords <- tibble::tribble(

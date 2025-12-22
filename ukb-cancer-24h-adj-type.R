@@ -3,88 +3,88 @@ source(paste0(redir, "ukb_utils.R"))
 source("ukb-cancer-24h-data.R")
 
 # main model --------
-# fit_cancer_type_other_adj <- brmcoda(clr_cancer_acc,
-#                                mvbind(z1_1, z2_1, z3_1) ~ cancer_before_acc_type_other +
-#                                  s(icd_ii_time_since_lo) +
-#                                  # other_conds_at_acc +
-#                                  s(age_at_acc) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation) + season,
-#                                # save_pars = save_pars(all = TRUE),
-#                                warmup = 500, chains = 4, cores = 4, backend = "cmdstanr",
-#                                 seed = 2025
-# )
-# saveRDS(fit_cancer_type_other_adj, paste0(outputdir, "fit_cancer_type_other_adj", ".RDS"))
+fit_cancer_type_other_adj <- brmcoda(clr_cancer_acc,
+                               mvbind(z1_1, z2_1, z3_1) ~ cancer_before_acc_type_other +
+                                 s(icd_ii_time_since_lo) +
+                                 # other_conds_at_acc +
+                                 s(age_at_acc) + sex + white + working + edu + never_smoked + current_drinker + s(deprivation) + season,
+                               # save_pars = save_pars(all = TRUE),
+                               warmup = 500, chains = 4, cores = 4, backend = "cmdstanr",
+                                seed = 2025
+)
+saveRDS(fit_cancer_type_other_adj, paste0(outputdir, "fit_cancer_type_other_adj", ".RDS"))
 
-# predicted posteriors ------------
-# fit_cancer_type_other_adj <- readRDS(paste0(outputdir, "fit_cancer_type_other_adj", ".RDS"))
+predicted posteriors ------------
+fit_cancer_type_other_adj <- readRDS(paste0(outputdir, "fit_cancer_type_other_adj", ".RDS"))
 
-# # reference grid
-# d_cancer_type_other_adj <- emmeans::ref_grid(fit_cancer_type_other_adj$model)@grid
+# reference grid
+d_cancer_type_other_adj <- emmeans::ref_grid(fit_cancer_type_other_adj$model)@grid
 
-# # predict
-# pred_cancer_type_other_adj <- fitted(fit_cancer_type_other_adj, newdata = d_cancer_type_other_adj, scale = "response", summary = FALSE)
+# predict
+pred_cancer_type_other_adj <- fitted(fit_cancer_type_other_adj, newdata = d_cancer_type_other_adj, scale = "response", summary = FALSE)
 
-# # summarise by cancer types
-# pred_cancer_type_other_adj <- apply(pred_cancer_type_other_adj, c(1), function(x)  cbind(d_cancer_type_other_adj, x))
-# pred_cancer_type_other_adj <- lapply(pred_cancer_type_other_adj, function(d) {
+# summarise by cancer types
+pred_cancer_type_other_adj <- apply(pred_cancer_type_other_adj, c(1), function(x)  cbind(d_cancer_type_other_adj, x))
+pred_cancer_type_other_adj <- lapply(pred_cancer_type_other_adj, function(d) {
 
-#   parts <- c("sleep", "mvpa", "lpa", "sb")
-#   parts0 <- c("tsleep_comp", "tmvpa_comp", "tlpa_comp", "tsb_comp")
+  parts <- c("sleep", "mvpa", "lpa", "sb")
+  parts0 <- c("tsleep_comp", "tmvpa_comp", "tlpa_comp", "tsb_comp")
 
-#   d <- as.data.table(d)
+  d <- as.data.table(d)
 
-#   d[, (paste0(parts)) :=
-#         lapply(.SD, function(x)
-#           weighted.mean(x, .wgt.)),
-#         .SDcols = parts0, by = cancer_before_acc_type_other]
+  d[, (paste0(parts)) :=
+        lapply(.SD, function(x)
+          weighted.mean(x, .wgt.)),
+        .SDcols = parts0, by = cancer_before_acc_type_other]
 
-#   d[, cancer_wgt := sum(.wgt.), by = cancer_before_acc_type_other]
+  d[, cancer_wgt := sum(.wgt.), by = cancer_before_acc_type_other]
 
-#   d[cancer_before_acc_type_other %nin% c("Healthy", "Others"), (paste0(parts, "_cancer")) := lapply(.SD, function(x) weighted.mean(x, cancer_wgt)), .SDcols = paste0(parts)]
+  d[cancer_before_acc_type_other %nin% c("Healthy", "Others"), (paste0(parts, "_cancer")) := lapply(.SD, function(x) weighted.mean(x, cancer_wgt)), .SDcols = paste0(parts)]
 
-#   d <- rbind(d,
-#              data.table(cancer_before_acc_type_other = "Cancer"),
-#              fill = TRUE
-#   )
+  d <- rbind(d,
+             data.table(cancer_before_acc_type_other = "Cancer"),
+             fill = TRUE
+  )
 
-#   d[cancer_before_acc_type_other == "Cancer", (parts) := d[cancer_before_acc_type_other %nin% c("Healthy", "Others"),
-#    lapply(.SD, function(x) unique(na.omit(x))),
-#    .SDcols = paste0(parts, "_cancer")
-#   ]]
+  d[cancer_before_acc_type_other == "Cancer", (parts) := d[cancer_before_acc_type_other %nin% c("Healthy", "Others"),
+   lapply(.SD, function(x) unique(na.omit(x))),
+   .SDcols = paste0(parts, "_cancer")
+  ]]
 
-#   # contrast vs healthy
-#   d[, (paste0(parts, "_vs_healthy")) :=
-#    Map(`-`, .SD, d[cancer_before_acc_type_other == "Healthy",
-#     .SD,
-#     .SDcols = parts
-#    ][1]),
-#   .SDcols = parts
-#   ]
+  # contrast vs healthy
+  d[, (paste0(parts, "_vs_healthy")) :=
+   Map(`-`, .SD, d[cancer_before_acc_type_other == "Healthy",
+    .SD,
+    .SDcols = parts
+   ][1]),
+  .SDcols = parts
+  ]
 
-#   # contrast vs others
-#   d[, (paste0(parts, "_vs_others")) :=
-#    Map(`-`, .SD, d[cancer_before_acc_type_other == "Others",
-#     .SD,
-#     .SDcols = parts
-#    ][1]),
-#   .SDcols = parts
-#   ]
+  # contrast vs others
+  d[, (paste0(parts, "_vs_others")) :=
+   Map(`-`, .SD, d[cancer_before_acc_type_other == "Others",
+    .SD,
+    .SDcols = parts
+   ][1]),
+  .SDcols = parts
+  ]
 
-#   d <- d[, .(cancer_before_acc_type_other,
-#              sleep, mvpa, lpa, sb,
+  d <- d[, .(cancer_before_acc_type_other,
+             sleep, mvpa, lpa, sb,
 
-#              sleep_vs_healthy, mvpa_vs_healthy, lpa_vs_healthy, sb_vs_healthy,
-#              sleep_vs_others, mvpa_vs_others, lpa_vs_others, sb_vs_others
+             sleep_vs_healthy, mvpa_vs_healthy, lpa_vs_healthy, sb_vs_healthy,
+             sleep_vs_others, mvpa_vs_others, lpa_vs_others, sb_vs_others
 
-#   )]
-#   d <- unique(d)
-#   d
-# })
+  )]
+  d <- unique(d)
+  d
+})
 
-# # assemble back to summarise posteriors
-# pred_cancer_type_other_adj <- as.data.frame(abind(pred_cancer_type_other_adj, along = 1))
-# pred_cancer_type_other_adj <- split(pred_cancer_type_other_adj, pred_cancer_type_other_adj$cancer_before_acc_type_other)
+# assemble back to summarise posteriors
+pred_cancer_type_other_adj <- as.data.frame(abind(pred_cancer_type_other_adj, along = 1))
+pred_cancer_type_other_adj <- split(pred_cancer_type_other_adj, pred_cancer_type_other_adj$cancer_before_acc_type_other)
 
-# saveRDS(pred_cancer_type_other_adj, paste0(outputdir, "pred_cancer_type_other_adj", ".RDS"))
+saveRDS(pred_cancer_type_other_adj, paste0(outputdir, "pred_cancer_type_other_adj", ".RDS"))
 pred_cancer_type_other_adj <- readRDS(paste0(outputdir, "pred_cancer_type_other_adj", ".RDS"))
 
 ## estimated means  ----------------------
